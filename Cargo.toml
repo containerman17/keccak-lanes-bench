@@ -1,0 +1,28 @@
+[package]
+name = "keccak-lanes-bench"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.89"
+license = "LicenseRef-Avalanche-Ecosystem"
+publish = false
+description = "Keccak-256 node hashing: one message per call versus 4 and 8 SIMD lanes"
+
+[dependencies]
+sha3 = "=0.12.0"
+tiny-keccak = { version = "=2.0.2", features = ["keccak"] }
+keccak-asm = "=0.1.9"
+keccak01 = { package = "keccak", version = "=0.1.6", optional = true }
+
+[dev-dependencies]
+core_affinity = "=0.8.3"
+
+[features]
+# RustCrypto keccak 0.1 f1600x2/x4/x8 (core::simd). Needs a nightly toolchain.
+rustcrypto-simd = ["dep:keccak01", "keccak01/simd"]
+
+[[bench]]
+name = "lanes"
+harness = false
+
+[profile.bench]
+debug = false
