@@ -1,0 +1,1563 @@
+diff --git a/Cargo.lock b/Cargo.lock
+index 060660654..9cfe41be0 100644
+--- a/Cargo.lock
++++ b/Cargo.lock
+@@ -1955,6 +1955,7 @@ dependencies = [
+  "parking_lot",
+  "pprof",
+  "rand 0.10.2",
++ "rayon",
+  "rlp",
+  "sha2 0.11.0",
+  "sha3",
+diff --git a/firewood/examples/hash_account.rs b/firewood/examples/hash_account.rs
+new file mode 100644
+index 000000000..8aa021869
+--- /dev/null
++++ b/firewood/examples/hash_account.rs
+@@ -0,0 +1,145 @@
++// Copyright (C) 2026, Ava Labs, Inc. All rights reserved.
++// See the file LICENSE.md for licensing terms.
++
++//! Deterministic single-account proposal workload. Create once, then copy the
++//! closed database before each mode's measure run.
++
++use clap::{Parser, ValueEnum};
++use firewood::api::{Db as _, Proposal as _};
++use firewood::db::{BatchOp, Db, DbConfig};
++use sha3::{Digest, Keccak256};
++use std::{collections::HashSet, error::Error, path::PathBuf, time::Instant};
++
++#[derive(Clone, Debug, ValueEnum)]
++enum Action {
++    Create,
++    Measure,
++}
++
++#[derive(Debug, Parser)]
++struct Args {
++    #[arg(value_enum)]
++    action: Action,
++    #[arg(long)]
++    path: PathBuf,
++    #[arg(long, default_value_t = 2_000_000)]
++    keys: usize,
++    #[arg(long, default_value_t = 38_400)]
++    dirty: usize,
++    #[arg(long, default_value_t = 10)]
++    blocks: usize,
++    #[arg(long, default_value_t = 100_000)]
++    load_batch: usize,
++}
++
++fn slot_key(index: usize) -> Vec<u8> {
++    let mut key = vec![0x42; 32];
++    key.extend_from_slice(&Keccak256::digest((index as u64).to_be_bytes()));
++    key
++}
++
++fn account_value() -> Vec<u8> {
++    let mut rlp = rlp::RlpStream::new_list(4);
++    rlp.append(&0u64);
++    rlp.append(&0u64);
++    rlp.append(&Keccak256::digest([0x80]).as_slice());
++    rlp.append(&Keccak256::digest([]).as_slice());
++    rlp.out().to_vec()
++}
++
++fn value(index: usize, block: usize) -> Vec<u8> {
++    // A valid RLP scalar, without leading zero bytes.
++    rlp::encode(&(index as u64).wrapping_add(block as u64).wrapping_add(1)).to_vec()
++}
++
++fn main() -> Result<(), Box<dyn Error>> {
++    let args = Args::parse();
++    let blocks = u32::try_from(args.blocks)?;
++    assert!(args.keys > 0 && args.dirty <= args.keys && args.load_batch > 0 && args.blocks > 0);
++    let create = matches!(args.action, Action::Create);
++    if create && args.path.exists() {
++        return Err("create requires a new path".into());
++    }
++    if !create && !args.path.is_dir() {
++        return Err("measure requires an existing database directory".into());
++    }
++    let db = Db::new(
++        &args.path,
++        DbConfig::builder()
++            .node_hash_algorithm(firewood_storage::NodeHashAlgorithm::compile_option())
++            .build(),
++    )?;
++    println!(
++        "mode={} keys={} dirty={} blocks={}",
++        std::env::var("FIREWOOD_HASH_MODE").unwrap_or_else(|_| "stock".into()),
++        args.keys,
++        args.dirty,
++        args.blocks
++    );
++    if create {
++        let start = Instant::now();
++        db.propose(vec![BatchOp::Put {
++            key: vec![0x42; 32],
++            value: account_value(),
++        }])?
++        .commit()?;
++        for begin in (0..args.keys).step_by(args.load_batch) {
++            let end = begin.saturating_add(args.load_batch).min(args.keys);
++            let batch = (begin..end)
++                .map(|index| BatchOp::Put {
++                    key: slot_key(index),
++                    value: value(index, 0),
++                })
++                .collect::<Vec<_>>();
++            db.propose(batch)?.commit()?;
++            println!(
++                "loaded={end} elapsed_ms={:.3}",
++                start.elapsed().as_secs_f64() * 1000.0
++            );
++        }
++        println!(
++            "baseline_root={}",
++            hex::encode(db.root_hash().ok_or("missing root")?)
++        );
++    } else {
++        println!(
++            "baseline_root={}",
++            hex::encode(db.root_hash().ok_or("missing root")?)
++        );
++        let mut random = 0x1234_5678_9abc_def0u64;
++        let mut total_ms = 0.0;
++        for block in 1..=args.blocks {
++            let mut selected = HashSet::with_capacity(args.dirty);
++            let mut batch = Vec::with_capacity(args.dirty);
++            while batch.len() < args.dirty {
++                random ^= random << 13;
++                random ^= random >> 7;
++                random ^= random << 17;
++                let index = random
++                    .checked_rem(args.keys as u64)
++                    .expect("keys is nonzero") as usize;
++                if selected.insert(index) {
++                    batch.push(BatchOp::Put {
++                        key: slot_key(index),
++                        value: value(index, block),
++                    });
++                }
++            }
++            let start = Instant::now();
++            let proposal = db.propose(batch)?;
++            let propose_ms = start.elapsed().as_secs_f64() * 1000.0;
++            let start = Instant::now();
++            proposal.commit()?;
++            let commit_ms = start.elapsed().as_secs_f64() * 1000.0;
++            let block_ms = propose_ms + commit_ms;
++            total_ms += block_ms;
++            println!(
++                "block={block} propose_ms={propose_ms:.3} commit_ms={commit_ms:.3} total_ms={block_ms:.3} root={}",
++                hex::encode(db.root_hash().ok_or("missing root")?)
++            );
++        }
++        println!("mean_ms={:.3}", total_ms / f64::from(blocks));
++    }
++    db.close()?;
++    Ok(())
++}
+diff --git a/firewood/tests/hash_account_modes.rs b/firewood/tests/hash_account_modes.rs
+new file mode 100644
+index 000000000..4d4783fb0
+--- /dev/null
++++ b/firewood/tests/hash_account_modes.rs
+@@ -0,0 +1,98 @@
++// Copyright (C) 2026, Ava Labs, Inc. All rights reserved.
++// See the file LICENSE.md for licensing terms.
++
++#![cfg(feature = "ethhash")]
++
++use firewood::api::{Db as _, Proposal as _};
++use firewood::db::{BatchOp, Db, DbConfig};
++use sha3::{Digest, Keccak256};
++use std::process::Command;
++
++fn slot(index: u64) -> Vec<u8> {
++    let mut key = vec![0x42; 32];
++    key.extend_from_slice(&Keccak256::digest(index.to_be_bytes()));
++    key
++}
++
++#[test]
++fn hash_mode_child() {
++    if std::env::var_os("FIREWOOD_HASH_CHILD").is_none() {
++        return;
++    }
++    let dir = tempfile::tempdir().unwrap();
++    let db = Db::new(
++        dir.path().join("db"),
++        DbConfig::builder()
++            .node_hash_algorithm(firewood_storage::NodeHashAlgorithm::compile_option())
++            .build(),
++    )
++    .unwrap();
++    let mut account = rlp::RlpStream::new_list(4);
++    account.append(&0u64);
++    account.append(&0u64);
++    account.append(&Keccak256::digest([0x80]).as_slice());
++    account.append(&Keccak256::digest([]).as_slice());
++    let stages = vec![
++        vec![BatchOp::Put {
++            key: vec![0x42; 32],
++            value: account.out().to_vec(),
++        }],
++        vec![BatchOp::Put {
++            key: slot(0),
++            value: rlp::encode(&1u64).to_vec(),
++        }],
++        (1..16384)
++            .map(|i| BatchOp::Put {
++                key: slot(i),
++                value: rlp::encode(&(i + 1)).to_vec(),
++            })
++            .collect(),
++        (0..16384)
++            .step_by(3)
++            .map(|i| BatchOp::Put {
++                key: slot(i),
++                value: rlp::encode(&(i + 9000)).to_vec(),
++            })
++            .collect(),
++        (1..16384)
++            .map(|i| BatchOp::Delete { key: slot(i) })
++            .collect(),
++        vec![BatchOp::Delete { key: slot(0) }],
++    ];
++    for batch in stages {
++        db.propose(batch).unwrap().commit().unwrap();
++        println!("ROOT {}", hex::encode(db.root_hash().unwrap()));
++    }
++    db.close().unwrap();
++}
++
++#[test]
++fn account_roots_match_in_every_hash_mode() {
++    let mut stock = None;
++    for mode in ["stock", "lanes", "par", "lanes+par"] {
++        let output = Command::new(std::env::current_exe().unwrap())
++            .args(["--exact", "hash_mode_child", "--nocapture"])
++            .env("FIREWOOD_HASH_CHILD", "1")
++            .env("FIREWOOD_HASH_MODE", mode)
++            .output()
++            .unwrap();
++        assert!(
++            output.status.success(),
++            "{mode}: {}\n{}",
++            String::from_utf8_lossy(&output.stdout),
++            String::from_utf8_lossy(&output.stderr)
++        );
++        let stdout = String::from_utf8(output.stdout).unwrap();
++        let roots: Vec<_> = stdout
++            .lines()
++            .filter_map(|line| line.strip_prefix("ROOT "))
++            .map(str::to_owned)
++            .collect();
++        assert_eq!(roots.len(), 6, "{stdout}");
++        if let Some(expected) = &stock {
++            assert_eq!(&roots, expected, "mode {mode}");
++        } else {
++            stock = Some(roots);
++        }
++    }
++}
+diff --git a/hashing-experiment.md b/hashing-experiment.md
+new file mode 100644
+index 000000000..9d6f703ff
+--- /dev/null
++++ b/hashing-experiment.md
+@@ -0,0 +1,93 @@
++# Experimental proposal hashing
++
++This branch starts at Firewood v0.8.0 and keeps its FFI API. Build once with
++`ethhash`; select a mode before starting each process:
++
++- `FIREWOOD_HASH_MODE=stock`: depth-first scalar hashing, the default.
++- `FIREWOOD_HASH_MODE=lanes`: collect dirty storage nodes by level and batch
++  independent Keccak messages. x86 selects AVX-512 or AVX2 at runtime; other
++  targets and lone messages use sha3.
++- `FIREWOOD_HASH_MODE=par`: split dirty branch children into Rayon tasks with the
++  stock scalar encoder.
++- `FIREWOOD_HASH_MODE=lanes+par`: batch levels inside the independent branch tasks.
++
++The first lookup caches the mode with `OnceLock`. Missing or unknown values
++select stock. Restart the process to change modes. Without the `ethhash`
++feature, the mode has no effect.
++
++## Implementation boundaries
++
++Account nodes and the single-storage-child fake root use the stock path.
++The optimized walk starts below the account and visits only dirty `Child::Node`
++entries. Levels are collected separately for each account storage child, not
++across all storage children together. Persisted child hashes remain available
++to their parents.
++
++The walk detaches nodes into levels, then rebuilds from the deepest level.
++Compressed branches first batch the internal branch digest, then encode and
++batch the outer extension digest. The encoder is shared with stock mode.
++Inline RLP retains the stock length rule.
++
++Parallel scheduling uses a bounded dirty-node scan before creating a Rayon
++scope for sibling branches. Tasks do not create further tasks. Scalar tasks
++use an iterative depth-first walk with a reused path; combined-mode tasks use
++level batching. The constants in `storage/src/hashers/batched.rs` keep small
++subtrees serial. Calls from `ParallelMerkle` reuse its current Rayon pool;
++calls outside that pool use Rayon's global pool. This avoids a recursive task
++per trie level. Combined mode falls back to serial lane batching when its
++initial branch does not meet the split cutoff.
++
++The copied Keccak permutation comes from the local keccak-lanes-bench project.
++The adapter groups variable-length messages by full-block count and uses
++per-message padding. Pointer reads use unaligned loads from each original
++pointer instead of gather offsets across allocations. Original kernel benchmark
++results therefore do not establish performance of this adapter.
++
++## Build the FFI library
++
++The distribution alias in `.cargo/config.toml` uses maxperf and enables
++`ethhash,logger`. The requested release builds use the same feature set:
++
++```sh
++cargo build --release --locked -p firewood-ffi --features ethhash,logger --target aarch64-apple-darwin
++cargo build --release --locked -p firewood-ffi --features ethhash,logger --target x86_64-unknown-linux-gnu
++```
++
++Outputs are `target/<target>/release/libfirewood_ffi.a`. Run the Linux command
++on the coordinator's Linux host. Linux linking and SIMD execution are
++UNVERIFIED by the Mac build. The Go harness must select this library when it
++links, then use separate processes for mode comparisons.
++
++## Verify and measure
++
++Run the following test command separately with each mode:
++
++```sh
++FIREWOOD_HASH_MODE=stock cargo test -p firewood-storage -p firewood --features ethhash
++FIREWOOD_HASH_MODE=lanes cargo test -p firewood-storage -p firewood --features ethhash
++FIREWOOD_HASH_MODE=par cargo test -p firewood-storage -p firewood --features ethhash
++FIREWOOD_HASH_MODE=lanes+par cargo test -p firewood-storage -p firewood --features ethhash
++```
++
++The integration test starts a separate process for each mode and compares
++account roots across insertion, overwrite, deletion, and single-child
++transitions. Storage tests cover inline RLP, extension digests, parallel levels,
++small-stack traversal, and message block boundaries. On x86, the kernel test
++runs each available vector implementation directly.
++
++```sh
++cargo build --release -p firewood --example hash_account --features ethhash
++FIREWOOD_HASH_MODE=stock target/release/examples/hash_account create --path evidence/account-baseline.db
++cp -R evidence/account-baseline.db evidence/account-stock.db
++FIREWOOD_HASH_MODE=stock target/release/examples/hash_account measure --path evidence/account-stock.db
++```
++
++Copy the closed baseline to a new destination for every mode. The example's
++CLI documents workload overrides. It uses deterministic account-plus-slot keys,
++valid short RLP scalar values, default cache and retention settings, and reports
++proposal and commit latency separately. Input generation is outside those
++timers. This short run enables pruning but does not establish steady-state
++pruning throughput. Close drains background persistence outside the block timer.
++
++Mac logs, timing commands, profiles, and the summary script are retained under
++`evidence/` as local artifacts, separate from the source patch.
+diff --git a/storage/Cargo.toml b/storage/Cargo.toml
+index 5b589717d..273fbf3ea 100644
+--- a/storage/Cargo.toml
++++ b/storage/Cargo.toml
+@@ -28,6 +28,7 @@ integer-encoding.workspace = true
+ metrics.workspace = true
+ metrics-util = { workspace = true, optional = true }
+ nonzero_ext.workspace = true
++rayon = { version = "1.12.0", optional = true }
+ rand = { workspace = true, optional = true }
+ sha2.workspace = true
+ smallvec.workspace = true
+@@ -70,7 +71,7 @@ sha2.workspace = true
+ [features]
+ logger = ["log"]
+ io-uring = ["dep:io-uring"]
+-ethhash = []
++ethhash = ["dep:rayon"]
+ test_utils = ["dep:metrics-util", "dep:rand"]
+ 
+ [[bench]]
+diff --git a/storage/src/hashers/batched.rs b/storage/src/hashers/batched.rs
+new file mode 100644
+index 000000000..61625a594
+--- /dev/null
++++ b/storage/src/hashers/batched.rs
+@@ -0,0 +1,447 @@
++// Copyright (C) 2026, Ava Labs, Inc. All rights reserved.
++// See the file LICENSE.md for licensing terms.
++
++//! Storage hashing with level batches or parallel branches. Account nodes use the stock path.
++
++use std::sync::OnceLock;
++
++use crate::{
++    Child, HashType, HashableShunt, MaybePersistedNode, Node, Path, PathComponent, SharedNode,
++};
++
++#[derive(Clone, Copy, Debug)]
++pub(crate) struct Mode {
++    pub(crate) lanes: bool,
++    pub(crate) parallel: bool,
++}
++
++pub(crate) fn mode() -> Mode {
++    static MODE: OnceLock<Mode> = OnceLock::new();
++    *MODE.get_or_init(|| match std::env::var("FIREWOOD_HASH_MODE").as_deref() {
++        Ok("lanes") => Mode {
++            lanes: true,
++            parallel: false,
++        },
++        Ok("par") => Mode {
++            lanes: false,
++            parallel: true,
++        },
++        Ok("lanes+par") => Mode {
++            lanes: true,
++            parallel: true,
++        },
++        _ => Mode {
++            lanes: false,
++            parallel: false,
++        },
++    })
++}
++
++struct Entry {
++    node: Node,
++    path: Path,
++    parent: Option<(usize, PathComponent)>,
++}
++
++/// Lane batches process independent nodes deepest first. Parallel mode splits
++/// dirty branch children using the caller's Rayon pool.
++#[expect(
++    clippy::disallowed_methods,
++    reason = "chunk size is a nonzero constant"
++)]
++pub(crate) fn hash_subtrie(node: Node, path: Path, mode: Mode) -> (MaybePersistedNode, HashType) {
++    if mode.parallel {
++        return hash_depth_first(node, path, true, mode.lanes);
++    }
++
++    let mut levels = vec![vec![Entry {
++        node,
++        path,
++        parent: None,
++    }]];
++    loop {
++        let mut next = Vec::new();
++        for (parent, entry) in levels
++            .last_mut()
++            .expect("root level")
++            .iter_mut()
++            .enumerate()
++        {
++            if let Node::Branch(branch) = &mut entry.node {
++                for (nibble, child) in &mut branch.children {
++                    if matches!(child, Some(Child::Node(_))) {
++                        let Some(Child::Node(node)) = child.take() else {
++                            unreachable!()
++                        };
++                        let mut path = entry.path.clone();
++                        path.0.extend_from_slice(&branch.partial_path.0);
++                        path.0.push(nibble.as_u8());
++                        next.push(Entry {
++                            node,
++                            path,
++                            parent: Some((parent, nibble)),
++                        });
++                    }
++                }
++            }
++        }
++        if next.is_empty() {
++            break;
++        }
++        levels.push(next);
++    }
++
++    while let Some(mut level) = levels.pop() {
++        // Chunking bounds temporary RLP buffers.
++        let hashes: Vec<HashType> = level
++            .chunks(256)
++            .flat_map(|chunk| hash_level(chunk, mode.lanes))
++            .collect();
++        for (entry, hash) in level.drain(..).zip(hashes) {
++            let persisted: MaybePersistedNode = SharedNode::new(entry.node).into();
++            if let Some((parent, nibble)) = entry.parent {
++                let parent = &mut levels
++                    .last_mut()
++                    .expect("parent level")
++                    .get_mut(parent)
++                    .expect("recorded parent index")
++                    .node;
++                let Node::Branch(parent) = parent else {
++                    unreachable!()
++                };
++                parent.children[nibble] = Some(Child::MaybePersisted(persisted, hash));
++            } else {
++                return (persisted, hash);
++            }
++        }
++    }
++    unreachable!("root is returned")
++}
++
++// Each task uses an iterative walk. Only its caller can create tasks, so a
++// path with arbitrarily many branch levels cannot recurse through Rayon.
++fn hash_depth_first(
++    mut node: Node,
++    mut path: Path,
++    mut may_split: bool,
++    lanes: bool,
++) -> (MaybePersistedNode, HashType) {
++    let mut parents = Vec::new();
++    loop {
++        if may_split && hash_parallel_children(&mut node, &path, lanes) {
++            may_split = false;
++        } else if lanes {
++            return hash_subtrie(
++                node,
++                path,
++                Mode {
++                    lanes: true,
++                    parallel: false,
++                },
++            );
++        }
++        if let Node::Branch(branch) = &mut node {
++            let dirty = branch
++                .children
++                .iter_mut()
++                .find(|(_, child)| matches!(child, Some(Child::Node(_))));
++            if let Some((nibble, child)) = dirty {
++                let Some(Child::Node(child)) = child.take() else {
++                    unreachable!()
++                };
++                let prefix_len = path.len();
++                path.0.extend_from_slice(&branch.partial_path.0);
++                path.0.push(nibble.as_u8());
++                parents.push((node, nibble, prefix_len));
++                node = child;
++                continue;
++            }
++        }
++        let hash = crate::hashednode::hash_node(&node, &path);
++        let persisted = SharedNode::new(node).into();
++        let Some((mut parent, nibble, prefix_len)) = parents.pop() else {
++            return (persisted, hash);
++        };
++        let Node::Branch(branch) = &mut parent else {
++            unreachable!()
++        };
++        branch.children[nibble] = Some(Child::MaybePersisted(persisted, hash));
++        path.0.truncate(prefix_len);
++        node = parent;
++    }
++}
++
++fn hash_parallel_children(node: &mut Node, path: &Path, lanes: bool) -> bool {
++    let Node::Branch(branch) = node else {
++        return false;
++    };
++    let dirty: Vec<_> = branch
++        .children
++        .iter()
++        .filter_map(|(_, child)| {
++            if let Some(Child::Node(node)) = child {
++                Some(node)
++            } else {
++                None
++            }
++        })
++        .collect();
++    if dirty.len() < 2 || !enough_dirty_work(dirty) {
++        return false;
++    }
++    let mut prefix = path.clone();
++    prefix.0.extend_from_slice(&branch.partial_path.0);
++    let mut jobs = Vec::new();
++    for (nibble, child) in &mut branch.children {
++        if matches!(child, Some(Child::Node(_))) {
++            let Some(Child::Node(node)) = child.take() else {
++                unreachable!()
++            };
++            let mut path = prefix.clone();
++            path.0.push(nibble.as_u8());
++            jobs.push((nibble, node, path));
++        }
++    }
++    let mut results = vec![None; jobs.len()];
++    rayon::scope(|scope| {
++        for ((nibble, node, path), output) in jobs.into_iter().zip(&mut results) {
++            scope.spawn(move |_| {
++                *output = Some((nibble, hash_depth_first(node, path, false, lanes)));
++            });
++        }
++    });
++    for result in results {
++        let (nibble, (node, hash)) = result.expect("scope joins every child");
++        branch.children[nibble] = Some(Child::MaybePersisted(node, hash));
++    }
++    true
++}
++
++fn enough_dirty_work(mut pending: Vec<&Node>) -> bool {
++    for _ in 0..512 {
++        let Some(node) = pending.pop() else {
++            return false;
++        };
++        if let Node::Branch(branch) = node {
++            pending.extend(branch.children.iter().filter_map(|(_, child)| {
++                if let Some(Child::Node(node)) = child {
++                    Some(node)
++                } else {
++                    None
++                }
++            }));
++        }
++    }
++    true
++}
++
++fn hash_level(level: &[Entry], lanes: bool) -> Vec<HashType> {
++    if !lanes {
++        return level
++            .iter()
++            .map(|entry| crate::hashednode::hash_node(&entry.node, &entry.path))
++            .collect();
++    }
++    let mut encoded = Vec::with_capacity(level.len());
++    let mut internal = Vec::new();
++    let mut internal_nodes = Vec::new();
++    for (index, entry) in level.iter().enumerate() {
++        let mut bytes = Vec::new();
++        super::ethhash::write_with_digest(
++            &HashableShunt::from_node(entry.path.as_components(), &entry.node),
++            &mut bytes,
++            |preimage| {
++                // A non-account node has at most one internal hash: its branch
++                // RLP when an extension path references that branch.
++                internal.push(preimage.to_vec());
++                internal_nodes.push(index);
++                [0; 32].into()
++            },
++        );
++        encoded.push(bytes);
++    }
++    if !internal.is_empty() {
++        let inputs: Vec<_> = internal.iter().map(Vec::as_slice).collect();
++        let mut hashes = vec![[0; 32]; inputs.len()];
++        super::lanes::hash_many(&inputs, &mut hashes);
++        for (index, hash) in internal_nodes.into_iter().zip(hashes) {
++            let entry = level.get(index).expect("recorded node index");
++            let bytes = encoded.get_mut(index).expect("one buffer per node");
++            bytes.clear();
++            super::ethhash::write_with_digest(
++                &HashableShunt::from_node(entry.path.as_components(), &entry.node),
++                bytes,
++                |_| hash.into(),
++            );
++        }
++    }
++    let inputs: Vec<_> = encoded
++        .iter()
++        .filter(|bytes| bytes.len() >= 32)
++        .map(Vec::as_slice)
++        .collect();
++    let mut hashes = vec![[0; 32]; inputs.len()];
++    super::lanes::hash_many(&inputs, &mut hashes);
++    let mut hashes = hashes.into_iter();
++    encoded
++        .into_iter()
++        .map(|bytes| {
++            if bytes.len() >= 32 {
++                HashType::Hash(hashes.next().expect("one hash per long preimage").into())
++            } else {
++                HashType::Rlp(bytes.into())
++            }
++        })
++        .collect()
++}
++
++#[cfg(test)]
++mod tests {
++    use super::*;
++    use crate::{BranchNode, Children, LeafNode};
++
++    #[test]
++    fn lanes_match_stock_for_inline_and_extension_nodes() {
++        let path = Path::from_nibbles_iterator(std::iter::repeat_n(1, 65));
++        let mut entries = Vec::new();
++        for length in [0, 1, 28, 29, 30, 31, 32, 135, 136, 137, 511] {
++            entries.push(Entry {
++                node: Node::Leaf(LeafNode {
++                    partial_path: Path::from_nibbles_iterator([2, 3].into_iter()),
++                    value: vec![7; length].into_boxed_slice(),
++                }),
++                path: path.clone(),
++                parent: None,
++            });
++        }
++        for partial in [vec![], vec![3], vec![3, 4, 5]] {
++            let mut children = Children::new();
++            for (index, child) in &mut children {
++                let leaf = Node::Leaf(LeafNode {
++                    partial_path: Path::default(),
++                    value: vec![index.as_u8(); 40].into_boxed_slice(),
++                });
++                let hash = crate::hashednode::hash_node(&leaf, &path);
++                *child = Some(Child::MaybePersisted(SharedNode::new(leaf).into(), hash));
++            }
++            entries.push(Entry {
++                node: Node::Branch(Box::new(BranchNode {
++                    partial_path: Path::from_nibbles_iterator(partial.into_iter()),
++                    value: None,
++                    children,
++                })),
++                path: path.clone(),
++                parent: None,
++            });
++        }
++        assert_eq!(hash_level(&entries, true), hash_level(&entries, false));
++    }
++
++    #[test]
++    #[expect(
++        clippy::disallowed_methods,
++        reason = "chunk size is a nonzero constant"
++    )]
++    fn parallel_children_match_serial_with_dirty_descendants() {
++        let path = Path::from_nibbles_iterator(std::iter::repeat_n(1, 65));
++        let leaves: Vec<_> = (0..4096)
++            .map(|index: u64| {
++                Node::Leaf(LeafNode {
++                    partial_path: Path::from_nibbles_iterator([2, 3, 4].into_iter()),
++                    value: index.to_be_bytes().into(),
++                })
++            })
++            .collect();
++        let mut layer = leaves;
++        while layer.len() > 1 {
++            layer = layer
++                .chunks(16)
++                .map(|nodes| {
++                    let mut children = Children::new();
++                    for ((_, child), node) in (&mut children).into_iter().zip(nodes) {
++                        *child = Some(Child::Node(node.clone()));
++                    }
++                    Node::Branch(Box::new(BranchNode {
++                        partial_path: Path::default(),
++                        value: None,
++                        children,
++                    }))
++                })
++                .collect();
++        }
++        let root = layer.pop().expect("root");
++        let stock = hash_subtrie(
++            root.clone(),
++            path.clone(),
++            Mode {
++                lanes: false,
++                parallel: false,
++            },
++        )
++        .1;
++        for mode in [
++            Mode {
++                lanes: true,
++                parallel: false,
++            },
++            Mode {
++                lanes: false,
++                parallel: true,
++            },
++            Mode {
++                lanes: true,
++                parallel: true,
++            },
++        ] {
++            assert_eq!(hash_subtrie(root.clone(), path.clone(), mode).1, stock);
++        }
++    }
++
++    #[test]
++    fn deep_dirty_chain_hashes_on_small_stack() {
++        let mut expected = None;
++        for mode in [
++            Mode {
++                lanes: true,
++                parallel: false,
++            },
++            Mode {
++                lanes: false,
++                parallel: true,
++            },
++            Mode {
++                lanes: true,
++                parallel: true,
++            },
++        ] {
++            let mut node = Node::Leaf(LeafNode {
++                partial_path: Path::default(),
++                value: vec![7; 32].into_boxed_slice(),
++            });
++            for _ in 0..1024 {
++                let mut children = Children::new();
++                let (_, child) = children.iter_mut().next().expect("child slot");
++                *child = Some(Child::Node(node));
++                node = Node::Branch(Box::new(BranchNode {
++                    partial_path: Path::default(),
++                    value: Some(vec![3; 32].into_boxed_slice()),
++                    children,
++                }));
++            }
++            let path = Path::from_nibbles_iterator(std::iter::repeat_n(1, 65));
++            let (hashed_node, hash) = std::thread::Builder::new()
++                .stack_size(128 * 1024)
++                .spawn(move || hash_subtrie(node, path, mode))
++                .expect("spawn hashing thread")
++                .join()
++                .expect("iterative hashing must fit on a small stack");
++            if let Some(expected) = &expected {
++                assert_eq!(&hash, expected);
++            } else {
++                expected = Some(hash);
++            }
++            // Drop outside the small thread: node destruction is a separate path.
++            drop(hashed_node);
++        }
++    }
++}
+diff --git a/storage/src/hashers/ethhash.rs b/storage/src/hashers/ethhash.rs
+index e30923d33..bc9812ad8 100644
+--- a/storage/src/hashers/ethhash.rs
++++ b/storage/src/hashers/ethhash.rs
+@@ -138,139 +138,144 @@ impl<T: Hashable> Preimage for T {
+     }
+ 
+     fn write(&self, buf: &mut impl HasUpdate) {
+-        let is_account = self.full_path().len() == 64;
+-        trace!("is_account: {is_account}");
++        write_with_digest(self, buf, |bytes| Keccak256::digest(bytes).into());
++    }
++}
+ 
+-        let child_hashes = self.children();
++pub(crate) fn write_with_digest<T: Hashable>(
++    value: &T,
++    buf: &mut impl HasUpdate,
++    mut digest: impl FnMut(&[u8]) -> TrieHash,
++) {
++    let is_account = value.full_path().len() == 64;
++    trace!("is_account: {is_account}");
+ 
+-        let children = child_hashes.count();
++    let child_hashes = value.children();
+ 
+-        if children == 0 {
+-            // since there are no children, this must be a leaf
+-            // we append two items, the partial_path, encoded, and the value
+-            // note that leaves must always have a value, so we know there
+-            // will be 2 items
+-            let path = nibbles_to_eth_compact(self.partial_path(), true);
+-            let value_bytes = self.value_digest().map(|ValueDigest::Value(bytes)| bytes);
++    let children = child_hashes.count();
+ 
+-            // For accounts, splice the empty-trie storage root hash into the
+-            // account RLP. If the splice fails (malformed value), fall back
+-            // to the raw value.
+-            let empty_root = Keccak256::digest(NULL_RLP);
+-            let account_value: Option<Box<[u8]>> = if is_account {
+-                value_bytes.and_then(|bytes| replace_list_field(bytes, 2, empty_root.as_ref()).ok())
+-            } else {
+-                None
+-            };
++    if children == 0 {
++        // since there are no children, this must be a leaf
++        // we append two items, the partial_path, encoded, and the value
++        // note that leaves must always have a value, so we know there
++        // will be 2 items
++        let path = nibbles_to_eth_compact(value.partial_path(), true);
++        let value_bytes = value.value_digest().map(|ValueDigest::Value(bytes)| bytes);
+ 
+-            let value_item = match (account_value.as_deref(), value_bytes) {
+-                (Some(updated), _) => RlpItem::Bytes(updated),
+-                (_, Some(bytes)) => RlpItem::Bytes(bytes),
+-                _ => RlpItem::Empty,
+-            };
+-
+-            let bytes = encode_list(&[RlpItem::Bytes(&path), value_item]);
+-            trace!("partial path {:?}", self.partial_path().display());
+-            trace!("serialized leaf-rlp: {:?}", hex::encode(&bytes));
+-            buf.update(&bytes);
++        // For accounts, splice the empty-trie storage root hash into the
++        // account RLP. If the splice fails (malformed value), fall back
++        // to the raw value.
++        let empty_root = Keccak256::digest(NULL_RLP);
++        let account_value: Option<Box<[u8]>> = if is_account {
++            value_bytes.and_then(|bytes| replace_list_field(bytes, 2, empty_root.as_ref()).ok())
+         } else {
+-            // for a branch, there are always 16 children and a value
+-            // Child::None we encode as RLP empty_data (0x80)
+-            let mut items: [RlpItem<'_>; BranchNode::MAX_CHILDREN + 1] =
+-                [RlpItem::Empty; BranchNode::MAX_CHILDREN + 1];
+-            for ((_, child), slot) in (&child_hashes).into_iter().zip(items.iter_mut()) {
+-                *slot = match child {
+-                    Some(HashType::Hash(hash)) => RlpItem::Bytes(hash.as_slice()),
+-                    Some(HashType::Rlp(rlp_bytes)) => RlpItem::Raw(rlp_bytes),
+-                    None => RlpItem::Empty,
+-                };
+-            }
++            None
++        };
+ 
+-            // For branch nodes, the 17th element is the value.
+-            // Account nodes (depth 32) handle values differently — the value
+-            // lives in the account RLP, not directly in the branch — so we
+-            // emit Empty here and splice it in below.
+-            if !is_account && let Some(ValueDigest::Value(digest)) = self.value_digest() {
+-                items[BranchNode::MAX_CHILDREN] = RlpItem::Bytes(digest);
+-            }
+-            let bytes = encode_list(&items);
+-            trace!("pass 1 bytes {:02X?}", hex::encode(&bytes));
++        let value_item = match (account_value.as_deref(), value_bytes) {
++            (Some(updated), _) => RlpItem::Bytes(updated),
++            (_, Some(bytes)) => RlpItem::Bytes(bytes),
++            _ => RlpItem::Empty,
++        };
+ 
+-            // we've collected all the children in bytes
++        let bytes = encode_list(&[RlpItem::Bytes(&path), value_item]);
++        trace!("partial path {:?}", value.partial_path().display());
++        trace!("serialized leaf-rlp: {:?}", hex::encode(&bytes));
++        buf.update(&bytes);
++    } else {
++        // for a branch, there are always 16 children and a value
++        // Child::None we encode as RLP empty_data (0x80)
++        let mut items: [RlpItem<'_>; BranchNode::MAX_CHILDREN + 1] =
++            [RlpItem::Empty; BranchNode::MAX_CHILDREN + 1];
++        for ((_, child), slot) in (&child_hashes).into_iter().zip(items.iter_mut()) {
++            *slot = match child {
++                Some(HashType::Hash(hash)) => RlpItem::Bytes(hash.as_slice()),
++                Some(HashType::Rlp(rlp_bytes)) => RlpItem::Raw(rlp_bytes),
++                None => RlpItem::Empty,
++            };
++        }
+ 
+-            let updated_bytes: Box<[u8]> = if is_account {
+-                // need to get the value again
+-                if let Some(ValueDigest::Value(rlp_encoded_bytes)) = self.value_digest() {
+-                    // rlp_encoded_bytes needs to be decoded
+-                    // TODO(rkuris): Handle corruption
+-                    // needs to be the hash of the RLP encoding of the root node that
+-                    // would have existed here (instead of this account node)
+-                    // the "root node" is actually this branch node iff there is
+-                    // more than one child. If there is only one child, then the
+-                    // child is actually the root node, so we need the hash of that
+-                    // child here.
+-                    let replacement_hash = if children == 1 {
+-                        // we need to treat this child like it's a root node, so the partial path is
+-                        // actually one longer than it is reported
+-                        match child_hashes
+-                            .iter()
+-                            .find_map(|(_, c)| c.as_ref())
+-                            .expect("we know there is exactly one child")
+-                        {
+-                            HashType::Hash(hash) => hash.clone(),
+-                            HashType::Rlp(rlp_bytes) => {
+-                                let path = nibbles_to_eth_compact(self.partial_path(), true);
+-                                let bytes =
+-                                    encode_list(&[RlpItem::Bytes(&path), RlpItem::Raw(rlp_bytes)]);
+-                                TrieHash::from(Keccak256::digest(bytes))
+-                            }
+-                        }
+-                    } else {
+-                        TrieHash::from(Keccak256::digest(&bytes))
+-                    };
+-                    trace!("replacement hash {:?}", hex::encode(&replacement_hash));
++        // For branch nodes, the 17th element is the value.
++        // Account nodes (depth 32) handle values differently: the value
++        // lives in the account RLP, not directly in the branch, so we
++        // emit Empty here and splice it in below.
++        if !is_account && let Some(ValueDigest::Value(digest)) = value.value_digest() {
++            items[BranchNode::MAX_CHILDREN] = RlpItem::Bytes(digest);
++        }
++        let bytes = encode_list(&items);
++        trace!("pass 1 bytes {:02X?}", hex::encode(&bytes));
++
++        // we've collected all the children in bytes
+ 
+-                    let updated =
+-                        replace_list_field(rlp_encoded_bytes, 2, replacement_hash.as_ref())
+-                            .unwrap_or_else(|_| Box::from(rlp_encoded_bytes));
+-                    trace!("updated encoded value {:02X?}", hex::encode(&updated));
+-                    updated
++        let updated_bytes: Box<[u8]> = if is_account {
++            // need to get the value again
++            if let Some(ValueDigest::Value(rlp_encoded_bytes)) = value.value_digest() {
++                // rlp_encoded_bytes needs to be decoded
++                // TODO(rkuris): Handle corruption
++                // needs to be the hash of the RLP encoding of the root node that
++                // would have existed here (instead of this account node)
++                // the "root node" is actually this branch node iff there is
++                // more than one child. If there is only one child, then the
++                // child is actually the root node, so we need the hash of that
++                // child here.
++                let replacement_hash = if children == 1 {
++                    // we need to treat this child like it's a root node, so the partial path is
++                    // actually one longer than it is reported
++                    match child_hashes
++                        .iter()
++                        .find_map(|(_, c)| c.as_ref())
++                        .expect("we know there is exactly one child")
++                    {
++                        HashType::Hash(hash) => hash.clone(),
++                        HashType::Rlp(rlp_bytes) => {
++                            let path = nibbles_to_eth_compact(value.partial_path(), true);
++                            let bytes =
++                                encode_list(&[RlpItem::Bytes(&path), RlpItem::Raw(rlp_bytes)]);
++                            digest(&bytes)
++                        }
++                    }
+                 } else {
+-                    // treat like non-account since it didn't have a value
+-                    warn!(
+-                        "Account node {:x?} without value",
+-                        self.full_path().display(),
+-                    );
+-                    bytes
+-                }
++                    digest(&bytes)
++                };
++                trace!("replacement hash {:?}", hex::encode(&replacement_hash));
++
++                let updated = replace_list_field(rlp_encoded_bytes, 2, replacement_hash.as_ref())
++                    .unwrap_or_else(|_| Box::from(rlp_encoded_bytes));
++                trace!("updated encoded value {:02X?}", hex::encode(&updated));
++                updated
+             } else {
++                // treat like non-account since it didn't have a value
++                warn!(
++                    "Account node {:x?} without value",
++                    value.full_path().display(),
++                );
+                 bytes
+-            };
++            }
++        } else {
++            bytes
++        };
+ 
+-            let partial_path = self.partial_path();
+-            if partial_path.is_empty() {
+-                trace!("pass 2=bytes {:02X?}", hex::encode(&updated_bytes));
+-                buf.update(&updated_bytes);
+-            } else {
+-                let path = nibbles_to_eth_compact(partial_path, is_account);
+-                // if the RLP is short enough, we can use it as-is, otherwise we hash it
+-                // to make the maximum length 32 bytes
+-                let value_item = if updated_bytes.len() > 31 && !is_account {
+-                    let hashed_bytes = Keccak256::digest(&updated_bytes);
+-                    let final_bytes = encode_list(&[
+-                        RlpItem::Bytes(&path),
+-                        RlpItem::Bytes(hashed_bytes.as_ref()),
+-                    ]);
+-                    trace!("pass 2 bytes {:02X?}", hex::encode(&final_bytes));
+-                    buf.update(&final_bytes);
+-                    return;
+-                } else {
+-                    RlpItem::Bytes(&updated_bytes)
+-                };
+-                let final_bytes = encode_list(&[RlpItem::Bytes(&path), value_item]);
++        let partial_path = value.partial_path();
++        if partial_path.is_empty() {
++            trace!("pass 2=bytes {:02X?}", hex::encode(&updated_bytes));
++            buf.update(&updated_bytes);
++        } else {
++            let path = nibbles_to_eth_compact(partial_path, is_account);
++            // if the RLP is short enough, we can use it as-is, otherwise we hash it
++            // to make the maximum length 32 bytes
++            let value_item = if updated_bytes.len() > 31 && !is_account {
++                let hashed_bytes = digest(&updated_bytes);
++                let final_bytes =
++                    encode_list(&[RlpItem::Bytes(&path), RlpItem::Bytes(hashed_bytes.as_ref())]);
+                 trace!("pass 2 bytes {:02X?}", hex::encode(&final_bytes));
+                 buf.update(&final_bytes);
+-            }
++                return;
++            } else {
++                RlpItem::Bytes(&updated_bytes)
++            };
++            let final_bytes = encode_list(&[RlpItem::Bytes(&path), value_item]);
++            trace!("pass 2 bytes {:02X?}", hex::encode(&final_bytes));
++            buf.update(&final_bytes);
+         }
+     }
+ }
+diff --git a/storage/src/hashers/lane_sponge.rs b/storage/src/hashers/lane_sponge.rs
+new file mode 100644
+index 000000000..a07ec3235
+--- /dev/null
++++ b/storage/src/hashers/lane_sponge.rs
+@@ -0,0 +1,61 @@
++// Copyright (C) 2026, Ava Labs, Inc. All rights reserved.
++// See the file LICENSE.md for licensing terms.
++
++// Multi-lane Keccak-256 sponge around any W-way Keccak-f[1600] kernel.
++
++pub(super) const RATE: usize = 136;
++
++/// `st[i][k]` is state lane `i` of message `k`, which is the SIMD register layout.
++pub(super) type State<const W: usize> = [[u64; W]; 25];
++
++/// A kernel XORs one 136-byte block from each of the W pointers into the state, then runs
++/// Keccak-f[1600]. Every pointer must be valid for 136 bytes.
++pub(super) type Kernel<const W: usize> = unsafe fn(&mut State<W>, &[*const u8; W]);
++
++#[repr(align(64))]
++struct Aligned<T>(T);
++
++/// Hashes `msgs` (all with the same full-block count) in groups of W. A group with fewer than W messages
++/// still runs the full W-lane kernel; the idle lanes hash zeros and are discarded.
++///
++/// # Safety
++/// `kernel` must be safe to call on this CPU.
++pub(super) unsafe fn hash<const W: usize>(msgs: &[&[u8]], out: &mut [[u8; 32]], kernel: Kernel<W>) {
++    assert_eq!(msgs.len(), out.len());
++    let Some(first) = msgs.first() else { return };
++    let len = first.len();
++    assert!(
++        msgs.iter().all(|m| m.len() / RATE == len / RATE),
++        "messages differ in full-block count"
++    );
++    let full = len / RATE;
++    for (group, out) in msgs.chunks(W).zip(out.chunks_mut(W)) {
++        // State and last block are cache-line aligned: unaligned, the kernels' vector loads and
++        // 8-byte gathers split cache lines and speed depended on where the stack happened to be.
++        let mut st = Aligned([[0; W]; 25]);
++        let st = &mut st.0;
++        let mut p = [first.as_ptr(); W];
++        for (p, m) in p.iter_mut().zip(group) {
++            *p = m.as_ptr();
++        }
++        for b in 0..full {
++            // SAFETY: block b of every message (idle lanes reuse message 0) is in bounds.
++            unsafe { kernel(st, &p.map(|p| p.add(b * RATE))) };
++        }
++        let mut last = Aligned([[0u8; RATE]; W]);
++        let last = &mut last.0;
++        for (blk, m) in last.iter_mut().zip(group) {
++            let rem = m.len() % RATE;
++            blk[..rem].copy_from_slice(&m[full * RATE..]);
++            blk[rem] ^= 0x01;
++            blk[RATE - 1] ^= 0x80;
++        }
++        // SAFETY: each pointer is a 136-byte stack block.
++        unsafe { kernel(st, &std::array::from_fn(|k| last[k].as_ptr())) };
++        for (k, o) in out.iter_mut().enumerate() {
++            for w in 0..4 {
++                o[8 * w..8 * w + 8].copy_from_slice(&st[w][k].to_le_bytes());
++            }
++        }
++    }
++}
+diff --git a/storage/src/hashers/lanes.rs b/storage/src/hashers/lanes.rs
+new file mode 100644
+index 000000000..f69de3150
+--- /dev/null
++++ b/storage/src/hashers/lanes.rs
+@@ -0,0 +1,348 @@
++// Copyright (C) 2026, Ava Labs, Inc. All rights reserved.
++// See the file LICENSE.md for licensing terms.
++
++//! Batched Keccak-256 with runtime-selected x86 vector kernels.
++
++use sha3::{Digest, Keccak256};
++
++/// Hashes messages in input order, including messages with different lengths.
++pub(super) fn hash_many(msgs: &[&[u8]], out: &mut [[u8; 32]]) {
++    assert_eq!(msgs.len(), out.len());
++    #[cfg(target_arch = "x86_64")]
++    if x86::hash_many(msgs, out) {
++        return;
++    }
++    scalar(msgs, out);
++}
++
++fn scalar(msgs: &[&[u8]], out: &mut [[u8; 32]]) {
++    for (message, digest) in msgs.iter().zip(out) {
++        *digest = Keccak256::digest(message).into();
++    }
++}
++
++// The vector intrinsics require unsafe code. Runtime feature detection protects every
++// kernel call; the sponge supplies complete blocks and owns the state buffers.
++#[cfg(target_arch = "x86_64")]
++#[allow(unsafe_code)]
++#[allow(
++    clippy::indexing_slicing,
++    clippy::arithmetic_side_effects,
++    clippy::disallowed_methods,
++    reason = "Fixed-width kernel indices and sponge block ranges are bounded by array sizes and validated lengths."
++)]
++mod x86 {
++    use std::arch::x86_64::{
++        _mm256_andnot_si256, _mm256_loadu_si256, _mm256_or_si256, _mm256_set_epi64x,
++        _mm256_set1_epi64x, _mm256_setzero_si256, _mm256_sllv_epi64, _mm256_srlv_epi64,
++        _mm256_storeu_si256, _mm256_xor_si256, _mm512_loadu_si512, _mm512_rolv_epi64,
++        _mm512_set_epi64, _mm512_set1_epi64, _mm512_setzero_si512, _mm512_storeu_si512,
++        _mm512_ternarylogic_epi64, _mm512_xor_si512,
++    };
++
++    // Resolve beside lanes.rs, rather than inside an implicit lanes/x86 directory.
++    mod sponge {
++        include!(concat!(
++            env!("CARGO_MANIFEST_DIR"),
++            "/src/hashers/lane_sponge.rs"
++        ));
++    }
++    use sponge::{RATE, State};
++
++    const RC: [u64; 24] = [
++        0x0000_0000_0000_0001,
++        0x0000_0000_0000_8082,
++        0x8000_0000_0000_808A,
++        0x8000_0000_8000_8000,
++        0x0000_0000_0000_808B,
++        0x0000_0000_8000_0001,
++        0x8000_0000_8000_8081,
++        0x8000_0000_0000_8009,
++        0x0000_0000_0000_008A,
++        0x0000_0000_0000_0088,
++        0x0000_0000_8000_8009,
++        0x0000_0000_8000_000A,
++        0x0000_0000_8000_808B,
++        0x8000_0000_0000_008B,
++        0x8000_0000_0000_8089,
++        0x8000_0000_0000_8003,
++        0x8000_0000_0000_8002,
++        0x8000_0000_0000_0080,
++        0x0000_0000_0000_800A,
++        0x8000_0000_8000_000A,
++        0x8000_0000_8000_8081,
++        0x8000_0000_0000_8080,
++        0x0000_0000_8000_0001,
++        0x8000_0000_8000_8008,
++    ];
++
++    /// Rotation of lane x + 5y.
++    const RHO: [u64; 25] = [
++        0, 1, 62, 28, 27, 36, 44, 6, 55, 20, 3, 10, 43, 25, 39, 41, 45, 15, 21, 8, 18, 2, 61, 56,
++        14,
++    ];
++
++    /// Pi moves lane (x, y) to (y, 2x + 3y).
++    const PI: [usize; 25] = {
++        let mut p = [0; 25];
++        let mut i = 0;
++        while i < 25 {
++            let (x, y) = (i % 5, i / 5);
++            p[i] = y + 5 * ((2 * x + 3 * y) % 5);
++            i += 1;
++        }
++        p
++    };
++
++    /// Repeats `$body` with `$i` bound to each literal, so every array index is a constant and
++    /// the state stays in registers (a plain `for` over 25 lanes is not unrolled by LLVM).
++    macro_rules! unroll {
++    ($i:ident in [$($n:literal),*] $body:block) => { $( { let $i: usize = $n; $body } )* };
++}
++
++    /// 24 rounds over `a: [V; 25]`, written once for both vector widths. The op macros are
++    /// defined inside each kernel so they expand under that kernel's target features.
++    macro_rules! keccak_f1600 {
++    ($a:ident) => {
++        for rc in RC {
++            let mut c = [$a[0]; 5];
++            unroll!(x in [0, 1, 2, 3, 4] {
++                c[x] = xor5!($a[x], $a[x + 5], $a[x + 10], $a[x + 15], $a[x + 20]);
++            });
++            let mut d = c;
++            unroll!(x in [0, 1, 2, 3, 4] {
++                d[x] = xor!(c[(x + 4) % 5], rol!(c[(x + 1) % 5], 1_u64));
++            });
++            let mut b = $a;
++            unroll!(i in [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24] {
++                b[PI[i]] = rol!(xor!($a[i], d[i % 5]), RHO[i]);
++            });
++            unroll!(y in [0, 5, 10, 15, 20] {
++                unroll!(x in [0, 1, 2, 3, 4] {
++                    $a[x + y] = chi!(b[x + y], b[(x + 1) % 5 + y], b[(x + 2) % 5 + y]);
++                });
++            });
++            $a[0] = xor!($a[0], splat!(rc));
++        }
++    };
++}
++
++    #[target_feature(enable = "avx2")]
++    unsafe fn kernel4(st: &mut State<4>, p: &[*const u8; 4]) {
++        macro_rules! splat {
++            ($n:expr) => {
++                _mm256_set1_epi64x(($n).cast_signed())
++            };
++        }
++        macro_rules! xor {
++            ($a:expr, $b:expr) => {
++                _mm256_xor_si256($a, $b)
++            };
++        }
++        macro_rules! xor5 {
++            ($a:expr, $b:expr, $c:expr, $d:expr, $e:expr) => {
++                xor!(xor!(xor!($a, $b), xor!($c, $d)), $e)
++            };
++        }
++        // Constant counts fold into immediate shifts. A count of 64 shifts to zero, so rol 0 is exact.
++        macro_rules! rol {
++            ($v:expr, $n:expr) => {{
++                let v = $v;
++                _mm256_or_si256(
++                    _mm256_sllv_epi64(v, splat!($n)),
++                    _mm256_srlv_epi64(v, splat!(64_u64 - $n)),
++                )
++            }};
++        }
++        macro_rules! chi {
++            ($a:expr, $b:expr, $c:expr) => {
++                xor!($a, _mm256_andnot_si256($b, $c))
++            };
++        }
++
++        let mut a = [_mm256_setzero_si256(); 25];
++        for i in 0..25 {
++            // SAFETY: each state lane holds four u64 values, the size of one vector.
++            a[i] = unsafe { _mm256_loadu_si256(st[i].as_ptr().cast()) };
++        }
++        for (w, lane) in a.iter_mut().take(RATE / 8).enumerate() {
++            // SAFETY: each input pointer covers RATE bytes; unaligned reads accept any byte slice.
++            let words = p.map(|p| unsafe { p.add(w * 8).cast::<i64>().read_unaligned() });
++            *lane = xor!(
++                *lane,
++                _mm256_set_epi64x(words[3], words[2], words[1], words[0])
++            );
++        }
++        keccak_f1600!(a);
++        for i in 0..25 {
++            // SAFETY: each mutable state lane holds one complete vector.
++            unsafe { _mm256_storeu_si256(st[i].as_mut_ptr().cast(), a[i]) };
++        }
++    }
++
++    #[target_feature(enable = "avx512f")]
++    unsafe fn kernel8(st: &mut State<8>, p: &[*const u8; 8]) {
++        macro_rules! splat {
++            ($n:expr) => {
++                _mm512_set1_epi64(($n).cast_signed())
++            };
++        }
++        macro_rules! xor {
++            ($a:expr, $b:expr) => {
++                _mm512_xor_si512($a, $b)
++            };
++        }
++        // vpternlogq: 0x96 is a ^ b ^ c, 0xD2 is a ^ (!b & c).
++        macro_rules! xor5 {
++            ($a:expr, $b:expr, $c:expr, $d:expr, $e:expr) => {
++                _mm512_ternarylogic_epi64::<0x96>(
++                    _mm512_ternarylogic_epi64::<0x96>($a, $b, $c),
++                    $d,
++                    $e,
++                )
++            };
++        }
++        macro_rules! rol {
++            ($v:expr, $n:expr) => {
++                _mm512_rolv_epi64($v, splat!($n))
++            };
++        }
++        macro_rules! chi {
++            ($a:expr, $b:expr, $c:expr) => {
++                _mm512_ternarylogic_epi64::<0xD2>($a, $b, $c)
++            };
++        }
++
++        let mut a = [_mm512_setzero_si512(); 25];
++        for i in 0..25 {
++            // SAFETY: each state lane holds eight u64 values, the size of one vector.
++            a[i] = unsafe { _mm512_loadu_si512(st[i].as_ptr().cast()) };
++        }
++        for (w, lane) in a.iter_mut().take(RATE / 8).enumerate() {
++            // SAFETY: each input pointer covers RATE bytes; unaligned reads accept any byte slice.
++            let words = p.map(|p| unsafe { p.add(w * 8).cast::<i64>().read_unaligned() });
++            *lane = xor!(
++                *lane,
++                _mm512_set_epi64(
++                    words[7], words[6], words[5], words[4], words[3], words[2], words[1], words[0]
++                )
++            );
++        }
++        keccak_f1600!(a);
++        for i in 0..25 {
++            // SAFETY: each mutable state lane holds one complete vector.
++            unsafe { _mm512_storeu_si512(st[i].as_mut_ptr().cast(), a[i]) };
++        }
++    }
++
++    pub(super) fn hash_many(msgs: &[&[u8]], out: &mut [[u8; 32]]) -> bool {
++        if msgs.len() < 2 {
++            return false;
++        }
++        if is_x86_feature_detected!("avx512f") {
++            // SAFETY: the CPU supports the kernel's target feature.
++            unsafe { grouped::<8>(msgs, out, kernel8) };
++        } else if is_x86_feature_detected!("avx2") {
++            // SAFETY: the CPU supports the kernel's target feature.
++            unsafe { grouped::<4>(msgs, out, kernel4) };
++        } else {
++            return false;
++        }
++        true
++    }
++
++    unsafe fn grouped<const W: usize>(
++        msgs: &[&[u8]],
++        out: &mut [[u8; 32]],
++        kernel: sponge::Kernel<W>,
++    ) {
++        let mut indices: Vec<_> = (0..msgs.len()).collect();
++        indices.sort_unstable_by_key(|&i| msgs[i].len() / RATE);
++        for group in indices.chunk_by(|&a, &b| msgs[a].len() / RATE == msgs[b].len() / RATE) {
++            for chunk in group.chunks(W) {
++                if let [index] = chunk {
++                    super::scalar(&msgs[*index..=*index], &mut out[*index..=*index]);
++                    continue;
++                }
++                let messages: [&[u8]; W] =
++                    std::array::from_fn(|i| msgs[chunk[i.min(chunk.len() - 1)]]);
++                let mut digests = [[0; 32]; W];
++                // SAFETY: caller checks the CPU feature and grouping guarantees equal block counts.
++                unsafe {
++                    sponge::hash(
++                        &messages[..chunk.len()],
++                        &mut digests[..chunk.len()],
++                        kernel,
++                    );
++                };
++                for (&index, digest) in chunk.iter().zip(digests) {
++                    out[index] = digest;
++                }
++            }
++        }
++    }
++    #[cfg(test)]
++    mod tests {
++        use super::{grouped, kernel4, kernel8};
++
++        #[test]
++        fn each_vector_kernel_matches_scalar() {
++            let lengths = [0, 1, 135, 136, 137, 271, 272, 273, 544, 1024];
++            let messages: Vec<Vec<u8>> = (0..49)
++                .map(|i| {
++                    (0..lengths[i % lengths.len()])
++                        .map(|j| (i + j) as u8)
++                        .collect()
++                })
++                .collect();
++            for count in 2..=messages.len() {
++                let refs: Vec<_> = messages[..count].iter().map(Vec::as_slice).collect();
++                let mut expected = vec![[0; 32]; count];
++                super::super::scalar(&refs, &mut expected);
++                let mut actual = vec![[0; 32]; count];
++                if is_x86_feature_detected!("avx2") {
++                    // SAFETY: this CPU supports AVX2.
++                    unsafe { grouped(&refs, &mut actual, kernel4) };
++                    assert_eq!(actual, expected, "AVX2 batch size {count}");
++                }
++                if is_x86_feature_detected!("avx512f") {
++                    // SAFETY: this CPU supports AVX-512F.
++                    unsafe { grouped(&refs, &mut actual, kernel8) };
++                    assert_eq!(actual, expected, "AVX-512 batch size {count}");
++                }
++            }
++        }
++    }
++}
++
++#[cfg(test)]
++mod tests {
++    use super::*;
++
++    #[test]
++    #[allow(
++        clippy::indexing_slicing,
++        clippy::arithmetic_side_effects,
++        reason = "Test inputs and batch slices use bounded loop indices."
++    )]
++    fn batched_hashes_match_scalar() {
++        let lengths = [
++            0, 1, 7, 8, 31, 32, 64, 135, 136, 137, 271, 272, 273, 544, 1024,
++        ];
++        let messages: Vec<Vec<u8>> = (0..129)
++            .map(|i| {
++                (0..lengths[i % lengths.len()])
++                    .map(|j| (i + j) as u8)
++                    .collect()
++            })
++            .collect();
++        for count in 0..=messages.len() {
++            let refs: Vec<_> = messages[..count].iter().map(Vec::as_slice).collect();
++            let mut actual = vec![[0; 32]; count];
++            let mut expected = actual.clone();
++            scalar(&refs, &mut expected);
++            hash_many(&refs, &mut actual);
++            assert_eq!(actual, expected, "batch size {count}");
++        }
++    }
++}
+diff --git a/storage/src/hashers/mod.rs b/storage/src/hashers/mod.rs
+index 586e082d7..b70ff88da 100644
+--- a/storage/src/hashers/mod.rs
++++ b/storage/src/hashers/mod.rs
+@@ -43,3 +43,8 @@
+ pub(crate) mod ethhash;
+ #[cfg(not(feature = "ethhash"))]
+ mod merkledb;
++
++#[cfg(feature = "ethhash")]
++pub(crate) mod batched;
++#[cfg(feature = "ethhash")]
++mod lanes;
+diff --git a/storage/src/nodestore/hash.rs b/storage/src/nodestore/hash.rs
+index 25d64d2c8..402648cb3 100644
+--- a/storage/src/nodestore/hash.rs
++++ b/storage/src/nodestore/hash.rs
+@@ -137,6 +137,18 @@ where
+         mut path_prefix: PathGuard<'_>,
+         #[cfg(feature = "ethhash")] fake_root_extra_nibble: Option<PathComponent>,
+     ) -> Result<(MaybePersistedNode, HashType), FileIoError> {
++        #[cfg(feature = "ethhash")]
++        if path_prefix.len() > 64 && fake_root_extra_nibble.is_none() {
++            let mode = crate::hashers::batched::mode();
++            if mode.lanes || mode.parallel {
++                return Ok(crate::hashers::batched::hash_subtrie(
++                    node,
++                    (*path_prefix).clone(),
++                    mode,
++                ));
++            }
++        }
++
+         // If this is a branch, find all unhashed children and recursively hash them.
+         trace!("hashing {node:?} at {path_prefix:?}");
+         if let Node::Branch(ref mut b) = node {
