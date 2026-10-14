@@ -1,0 +1,5 @@
+bench/go/csbench/results/c8i/raw/gate-bundled.jsonl 52 roots and checksums match
+bench/go/csbench/results/c8i/raw/gate-lanes+par.jsonl 52 roots and checksums match
+bench/go/csbench/results/c8i/raw/gate-lanes.jsonl 52 roots and checksums match
+bench/go/csbench/results/c8i/raw/gate-par.jsonl 52 roots and checksums match
+bench/go/csbench/results/c8i/raw/gate-stock.jsonl 52 roots and checksums match

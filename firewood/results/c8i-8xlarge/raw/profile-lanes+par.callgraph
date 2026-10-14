@@ -1,0 +1,228 @@
+# To display the perf.data header info, please use --header/--header-only options.
+#
+#
+# Total Lost Samples: 0
+#
+# Samples: 8K of event 'cpu-clock'
+# Event count (approx.): 16875751368
+#
+# Overhead  Command  Shared Object      Symbol                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      
+# ........  .......  .................  ............................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................
+#
+     7.80%  csbench  csbench            [.] <alloc::boxed::Box<firewood_storage::node::branch::BranchNode> as core::clone::Clone>::clone
+            |          
+            |--4.10%--clone<lock_api::mutex::Mutex<parking_lot::raw_mutex::RawMutex, firewood_storage::node::persist::MaybePersisted>, alloc::alloc::Global> (inlined)
+            |          clone (inlined)
+            |          clone (inlined)
+            |          clone<firewood_storage::node::branch::Child> (inlined)
+            |          {closure#0}<core::option::Option<firewood_storage::node::branch::Child>, 16> (inlined)
+            |          {closure#0}<core::option::Option<firewood_storage::node::branch::Child>, usize, core::array::{impl#22}::clone::{closure_env#0}<core::option::Option<firewood_storage::node::branch::Child>, 16>> (inlined)
+            |          try_from_fn_erased<core::ops::try_trait::NeverShortCircuit<core::option::Option<firewood_storage::node::branch::Child>>, core::ops::try_trait::{impl#0}::wrap_mut_1::{closure_env#0}<core::option::Option<firewood_storage::node::branch::Child>, usize, core::array::{impl#22}::clone::{closure_env#0}<core::option::Option<firewood_storage::node::branch::Child>, 16>>> (inlined)
+            |          try_from_fn<core::ops::try_trait::NeverShortCircuit<core::option::Option<firewood_storage::node::branch::Child>>, 16, core::ops::try_trait::{impl#0}::wrap_mut_1::{closure_env#0}<core::option::Option<firewood_storage::node::branch::Child>, usize, core::array::{impl#22}::clone::{closure_env#0}<core::option::Option<firewood_storage::node::branch::Child>, 16>>> (inlined)
+            |          from_fn<core::option::Option<firewood_storage::node::branch::Child>, 16, core::array::{impl#22}::clone::{closure_env#0}<core::option::Option<firewood_storage::node::branch::Child>, 16>> (inlined)
+            |          clone<core::option::Option<firewood_storage::node::branch::Child>, 16> (inlined)
+            |          clone<core::option::Option<firewood_storage::node::branch::Child>, 16> (inlined)
+            |          clone<core::option::Option<firewood_storage::node::branch::Child>> (inlined)
+            |          clone (inlined)
+            |          clone_one<firewood_storage::node::branch::BranchNode> (inlined)
+            |          clone_to_uninit<firewood_storage::node::branch::BranchNode> (inlined)
+            |          clone<firewood_storage::node::branch::BranchNode, alloc::alloc::Global> (inlined)
+            |          
+            |--1.51%--spilled<[u8; 64]> (inlined)
+            |          triple<[u8; 64]> (inlined)
+            |          deref<[u8; 64]> (inlined)
+            |          as_slice<[u8; 64]> (inlined)
+            |          clone<[u8; 64]> (inlined)
+            |          clone (inlined)
+            |          clone (inlined)
+            |          clone_one<firewood_storage::node::branch::BranchNode> (inlined)
+            |          clone_to_uninit<firewood_storage::node::branch::BranchNode> (inlined)
+            |          clone<firewood_storage::node::branch::BranchNode, alloc::alloc::Global> (inlined)
+            |          
+             --1.32%--clone<firewood_storage::node::branch::Child> (inlined)
+                       {closure#0}<core::option::Option<firewood_storage::node::branch::Child>, 16> (inlined)
+                       {closure#0}<core::option::Option<firewood_storage::node::branch::Child>, usize, core::array::{impl#22}::clone::{closure_env#0}<core::option::Option<firewood_storage::node::branch::Child>, 16>> (inlined)
+                       try_from_fn_erased<core::ops::try_trait::NeverShortCircuit<core::option::Option<firewood_storage::node::branch::Child>>, core::ops::try_trait::{impl#0}::wrap_mut_1::{closure_env#0}<core::option::Option<firewood_storage::node::branch::Child>, usize, core::array::{impl#22}::clone::{closure_env#0}<core::option::Option<firewood_storage::node::branch::Child>, 16>>> (inlined)
+                       try_from_fn<core::ops::try_trait::NeverShortCircuit<core::option::Option<firewood_storage::node::branch::Child>>, 16, core::ops::try_trait::{impl#0}::wrap_mut_1::{closure_env#0}<core::option::Option<firewood_storage::node::branch::Child>, usize, core::array::{impl#22}::clone::{closure_env#0}<core::option::Option<firewood_storage::node::branch::Child>, 16>>> (inlined)
+                       from_fn<core::option::Option<firewood_storage::node::branch::Child>, 16, core::array::{impl#22}::clone::{closure_env#0}<core::option::Option<firewood_storage::node::branch::Child>, 16>> (inlined)
+                       clone<core::option::Option<firewood_storage::node::branch::Child>, 16> (inlined)
+                       clone<core::option::Option<firewood_storage::node::branch::Child>, 16> (inlined)
+                       clone<core::option::Option<firewood_storage::node::branch::Child>> (inlined)
+                       clone (inlined)
+                       clone_one<firewood_storage::node::branch::BranchNode> (inlined)
+                       clone_to_uninit<firewood_storage::node::branch::BranchNode> (inlined)
+                       clone<firewood_storage::node::branch::BranchNode, alloc::alloc::Global> (inlined)
+
+     3.84%  csbench  csbench            [.] <firewood_storage::node::persist::MaybePersistedNode>::as_shared_node::<&firewood_storage::nodestore::NodeStore<firewood_storage::nodestore::Committed, firewood_storage::linear::filebacked::FileBacked>>
+            |          
+            |--1.98%--lock (inlined)
+            |          lock<parking_lot::raw_mutex::RawMutex, firewood_storage::node::persist::MaybePersisted> (inlined)
+            |          as_shared_node<&firewood_storage::nodestore::NodeStore<firewood_storage::nodestore::Committed, firewood_storage::linear::filebacked::FileBacked>> (inlined)
+            |          
+             --1.60%--clone<firewood_storage::node::Node> (inlined)
+                       as_shared_node<&firewood_storage::nodestore::NodeStore<firewood_storage::nodestore::Committed, firewood_storage::linear::filebacked::FileBacked>> (inlined)
+
+     3.66%  csbench  csbench            [.] <firewood_storage::node::path::Path as core::ops::deref::Deref>::deref
+            |          
+             --3.53%--spilled<[u8; 64]> (inlined)
+                       triple<[u8; 64]> (inlined)
+                       deref<[u8; 64]> (inlined)
+                       deref (inlined)
+
+     3.57%  csbench  csbench            [.] <firewood_storage::node::branch::Child as core::clone::Clone>::clone
+            |          
+             --2.86%--clone<lock_api::mutex::Mutex<parking_lot::raw_mutex::RawMutex, firewood_storage::node::persist::MaybePersisted>, alloc::alloc::Global> (inlined)
+                       clone (inlined)
+                       clone (inlined)
+
+     3.36%  csbench  csbench            [.] <alloc::boxed::Box<firewood_storage::node::branch::BranchNode> as core::clone::Clone>::clone
+            |          
+             --1.54%--clone<firewood_storage::node::branch::Child> (inlined)
+                       {closure#0}<core::option::Option<firewood_storage::node::branch::Child>, 16> (inlined)
+                       {closure#0}<core::option::Option<firewood_storage::node::branch::Child>, usize, core::array::{impl#22}::clone::{closure_env#0}<core::option::Option<firewood_storage::node::branch::Child>, 16>> (inlined)
+                       try_from_fn_erased<core::ops::try_trait::NeverShortCircuit<core::option::Option<firewood_storage::node::branch::Child>>, core::ops::try_trait::{impl#0}::wrap_mut_1::{closure_env#0}<core::option::Option<firewood_storage::node::branch::Child>, usize, core::array::{impl#22}::clone::{closure_env#0}<core::option::Option<firewood_storage::node::branch::Child>, 16>>> (inlined)
+                       try_from_fn<core::ops::try_trait::NeverShortCircuit<core::option::Option<firewood_storage::node::branch::Child>>, 16, core::ops::try_trait::{impl#0}::wrap_mut_1::{closure_env#0}<core::option::Option<firewood_storage::node::branch::Child>, usize, core::array::{impl#22}::clone::{closure_env#0}<core::option::Option<firewood_storage::node::branch::Child>, 16>>> (inlined)
+                       from_fn<core::option::Option<firewood_storage::node::branch::Child>, 16, core::array::{impl#22}::clone::{closure_env#0}<core::option::Option<firewood_storage::node::branch::Child>, 16>> (inlined)
+                       clone<core::option::Option<firewood_storage::node::branch::Child>, 16> (inlined)
+                       clone<core::option::Option<firewood_storage::node::branch::Child>, 16> (inlined)
+                       clone<core::option::Option<firewood_storage::node::branch::Child>> (inlined)
+                       clone (inlined)
+                       clone_one<firewood_storage::node::branch::BranchNode> (inlined)
+                       clone_to_uninit<firewood_storage::node::branch::BranchNode> (inlined)
+                       clone<firewood_storage::node::branch::BranchNode, alloc::alloc::Global> (inlined)
+
+     2.51%  csbench  csbench            [.] core::ptr::drop_glue::<core::option::Option<firewood_storage::node::branch::Child>>
+            |          
+             --1.79%--drop<lock_api::mutex::Mutex<parking_lot::raw_mutex::RawMutex, firewood_storage::node::persist::MaybePersisted>, alloc::alloc::Global> (inlined)
+                       drop_glue<alloc::sync::Arc<lock_api::mutex::Mutex<parking_lot::raw_mutex::RawMutex, firewood_storage::node::persist::MaybePersisted>, alloc::alloc::Global>> (inlined)
+                       drop_glue<firewood_storage::node::persist::MaybePersistedNode> (inlined)
+                       drop_glue<firewood_storage::node::branch::Child> (inlined)
+                       drop_glue<core::option::Option<firewood_storage::node::branch::Child>> (inlined)
+
+     2.39%  csbench  csbench            [.] <lru_mem::LruCache<firewood_storage::nodestore::primitives::LinearAddress, firewood_storage::CachedNode>>::insert
+     2.24%  csbench  csbench            [.] golang.org/x/crypto/sha3.keccakF1600
+            |
+            ---golang.org/x/crypto/sha3.keccakF1600
+               |          
+                --2.23%--golang.org/x/crypto/sha3.(*state).permute (inlined)
+                          golang.org/x/crypto/sha3.(*state).padAndPermute
+                          golang.org/x/crypto/sha3.(*state).Read
+                          github.com/ava-labs/libevm/crypto.Keccak256
+                          main.(*engine).apply
+                          main.run
+                          main.main
+                          internal/runtime/atomic.(*Uint32).Load (inlined)
+                          runtime.main
+                          runtime.goexit.abi0
+
+     2.17%  csbench  csbench            [.] <firewood_storage::linear::filebacked::FileBacked as firewood_storage::linear::ReadableStorage>::read_cached_node
+     2.15%  csbench  csbench            [.] <firewood_storage::node::persist::MaybePersistedNode>::as_shared_node::<firewood_storage::nodestore::NodeStore<firewood_storage::nodestore::Mutable<firewood_storage::nodestore::Propose>, firewood_storage::linear::filebacked::FileBacked>>
+            |          
+            |--1.09%--clone<firewood_storage::node::Node> (inlined)
+            |          as_shared_node<firewood_storage::nodestore::NodeStore<firewood_storage::nodestore::Mutable<firewood_storage::nodestore::Propose>, firewood_storage::linear::filebacked::FileBacked>> (inlined)
+            |          
+             --0.91%--lock (inlined)
+                       lock<parking_lot::raw_mutex::RawMutex, firewood_storage::node::persist::MaybePersisted> (inlined)
+                       as_shared_node<firewood_storage::nodestore::NodeStore<firewood_storage::nodestore::Mutable<firewood_storage::nodestore::Propose>, firewood_storage::linear::filebacked::FileBacked>> (inlined)
+
+     2.14%  csbench  csbench            [.] <[&core::option::Option<firewood_storage::node::branch::Child>; 16]>::try_map::<core::ops::try_trait::NeverShortCircuit<core::option::Option<firewood_storage::hashtype::ethhash::HashOrRlp>>, <core::ops::try_trait::NeverShortCircuit<core::option::Option<firewood_storage::hashtype::ethhash::HashOrRlp>>>::wrap_mut_1<&core::option::Option<firewood_storage::node::branch::Child>, <firewood_storage::node::children::Children<&core::option::Option<firewood_storage::node::branch::Child>>>::map<core::option::Option<firewood_storage::hashtype::ethhash::HashOrRlp>, <firewood_storage::node::branch::BranchNode>::children_hashes::{closure#0}>::{closure#0}>::{closure#0}>
+     2.00%  csbench  csbench            [.] <metrics_util::registry::Registry<metrics::key::Key, metrics_util::registry::recency::GenerationalStorage<metrics_exporter_prometheus::registry::AtomicStorage>>>::get_or_create_counter::<<metrics_exporter_prometheus::recorder::PrometheusRecorder as metrics::recorder::Recorder>::register_counter::{closure#0}, metrics::handles::Counter>
+     1.90%  csbench  csbench            [.] core::ptr::drop_glue::<firewood_storage::node::Node>
+            |          
+             --1.89%--spilled<[u8; 64]> (inlined)
+                       drop<[u8; 64]> (inlined)
+                       drop_glue<smallvec::SmallVec<[u8; 64]>> (inlined)
+                       drop_glue<firewood_storage::node::path::Path> (inlined)
+                       |          
+                        --1.52%--drop_glue<firewood_storage::node::branch::BranchNode> (inlined)
+                                  drop_glue<alloc::boxed::Box<firewood_storage::node::branch::BranchNode, alloc::alloc::Global>> (inlined)
+                                  drop_glue<firewood_storage::node::Node> (inlined)
+
+     1.86%  csbench  csbench            [.] firewood_storage::hashers::batched::hash_subtrie
+            |          
+             --0.99%--hash_subtrie (inlined)
+                       |          
+                        --0.91%--0x9066000000000084
+
+     1.85%  csbench  csbench            [.] core::ptr::drop_glue::<core::option::Option<firewood_storage::node::branch::Child>>
+            |          
+             --1.51%--drop<lock_api::mutex::Mutex<parking_lot::raw_mutex::RawMutex, firewood_storage::node::persist::MaybePersisted>, alloc::alloc::Global> (inlined)
+                       drop_glue<alloc::sync::Arc<lock_api::mutex::Mutex<parking_lot::raw_mutex::RawMutex, firewood_storage::node::persist::MaybePersisted>, alloc::alloc::Global>> (inlined)
+                       drop_glue<firewood_storage::node::persist::MaybePersistedNode> (inlined)
+                       drop_glue<firewood_storage::node::branch::Child> (inlined)
+                       drop_glue<core::option::Option<firewood_storage::node::branch::Child>> (inlined)
+
+     1.51%  csbench  csbench            [.] <firewood_storage::hashedshunt::HashableShunt<&[firewood_storage::path::component::PathComponent], &[firewood_storage::path::component::PathComponent]> as firewood_storage::hashednode::Hashable>::children
+            |          
+             --1.00%--write<core::option::Option<firewood_storage::hashtype::ethhash::HashOrRlp>> (inlined)
+                       push_unchecked<core::option::Option<firewood_storage::hashtype::ethhash::HashOrRlp>> (inlined)
+                       try_from_fn_erased<core::ops::try_trait::NeverShortCircuit<core::option::Option<firewood_storage::hashtype::ethhash::HashOrRlp>>, core::ops::try_trait::{impl#0}::wrap_mut_1::{closure_env#0}<core::option::Option<firewood_storage::hashtype::ethhash::HashOrRlp>, usize, core::array::{impl#22}::clone::{closure_env#0}<core::option::Option<firewood_storage::hashtype::ethhash::HashOrRlp>, 16>>> (inlined)
+                       try_from_fn<core::ops::try_trait::NeverShortCircuit<core::option::Option<firewood_storage::hashtype::ethhash::HashOrRlp>>, 16, core::ops::try_trait::{impl#0}::wrap_mut_1::{closure_env#0}<core::option::Option<firewood_storage::hashtype::ethhash::HashOrRlp>, usize, core::array::{impl#22}::clone::{closure_env#0}<core::option::Option<firewood_storage::hashtype::ethhash::HashOrRlp>, 16>>> (inlined)
+                       from_fn<core::option::Option<firewood_storage::hashtype::ethhash::HashOrRlp>, 16, core::array::{impl#22}::clone::{closure_env#0}<core::option::Option<firewood_storage::hashtype::ethhash::HashOrRlp>, 16>> (inlined)
+                       clone<core::option::Option<firewood_storage::hashtype::ethhash::HashOrRlp>, 16> (inlined)
+                       clone<core::option::Option<firewood_storage::hashtype::ethhash::HashOrRlp>, 16> (inlined)
+                       clone<core::option::Option<firewood_storage::hashtype::ethhash::HashOrRlp>> (inlined)
+                       children<&[firewood_storage::path::component::PathComponent], &[firewood_storage::path::component::PathComponent]> (inlined)
+
+     1.50%  csbench  csbench            [.] <firewood::merkle::Merkle<firewood_storage::nodestore::NodeStore<firewood_storage::nodestore::Mutable<firewood_storage::nodestore::Propose>, firewood_storage::linear::filebacked::FileBacked>>>::insert_helper
+     1.44%  csbench  csbench            [.] <bumpalo::collections::vec::Vec<u8> as firewood_storage::node::ExtendableBytes>::extend_from_slice
+     1.22%  csbench  csbench            [.] <firewood_storage::node::branch::Child>::unpersisted
+            |          
+             --0.81%--lock (inlined)
+                       lock<parking_lot::raw_mutex::RawMutex, firewood_storage::node::persist::MaybePersisted> (inlined)
+                       unpersisted (inlined)
+                       unpersisted (inlined)
+
+     1.16%  csbench  csbench            [.] <firewood_storage::node::branch::BranchNode as lru_mem::mem_size::HeapSize>::heap_size
+     1.15%  csbench  [kernel.kallsyms]  [k] rep_movs_alternative
+            |
+            ---rep_movs_alternative
+               |          
+                --0.93%--copy_page_to_iter
+                          filemap_read
+                          generic_file_read_iter
+                          ext4_file_read_iter
+                          vfs_read
+                          __x64_sys_pread64
+                          x64_sys_call
+                          do_syscall_64
+                          entry_SYSCALL_64_after_hwframe
+                          __libc_pread
+                          read_at (inlined)
+                          read_at (inlined)
+                          read_at (inlined)
+                          read (inlined)
+                          0x8949f78949d48949
+
+     1.14%  csbench  csbench            [.] _rjem_je_arena_ptr_array_flush
+     1.12%  csbench  csbench            [.] <firewood_storage::node::branch::Child>::persist_info
+     1.10%  csbench  csbench            [.] firewood_storage::hashers::lanes::x86::kernel8
+     1.08%  csbench  csbench            [.] keccak::backends::soft::keccak_p::<u64, 24>
+     1.07%  csbench  csbench            [.] <firewood_storage::node::Node>::as_bytes::<bumpalo::collections::vec::Vec<u8>>
+     1.03%  csbench  csbench            [.] <firewood_storage::node::persist::MaybePersistedNode>::as_shared_node::<firewood_storage::nodestore::NodeStore<firewood_storage::nodestore::Committed, firewood_storage::linear::filebacked::FileBacked>>
+     1.02%  csbench  csbench            [.] firewood::merkle::get_helper::<&firewood_storage::nodestore::NodeStore<firewood_storage::nodestore::Committed, firewood_storage::linear::filebacked::FileBacked>>
+     1.01%  csbench  csbench            [.] core::ptr::drop_glue::<metrics_util::registry::recency::Generational<alloc::sync::Arc<core::sync::atomic::Atomic<u64>>>>
+     0.96%  csbench  csbench            [.] <triomphe::arc::Arc<firewood_storage::node::Node>>::unwrap_or_clone
+     0.89%  csbench  [kernel.kallsyms]  [k] do_user_addr_fault
+            |
+            ---do_user_addr_fault
+               exc_page_fault
+               asm_exc_page_fault
+
+     0.86%  csbench  csbench            [.] <firewood_storage::node::persist::MaybePersistedNode>::allocated_info
+     0.86%  csbench  csbench            [.] _rjem_je_edata_heap_remove_first
+     0.84%  csbench  csbench            [.] <<firewood_storage::node::children::Children<core::option::Option<firewood_storage::node::branch::Child>>>::iter_present::{closure#0} as core::ops::function::FnOnce<((firewood_storage::path::component::PathComponent, &core::option::Option<firewood_storage::node::branch::Child>),)>>::call_once
+            |          
+             --0.82%--map<&firewood_storage::node::branch::Child, (firewood_storage::path::component::PathComponent, &firewood_storage::node::branch::Child), firewood_storage::node::children::{impl#2}::iter_present::{closure#0}::{closure_env#0}<firewood_storage::node::branch::Child>> (inlined)
+                       {closure#0}<firewood_storage::node::branch::Child> (inlined)
+                       call_once<firewood_storage::node::children::{impl#2}::iter_present::{closure_env#0}<firewood_storage::node::branch::Child>, ((firewood_storage::path::component::PathComponent, &core::option::Option<firewood_storage::node::branch::Child>))> (inlined)
+
+     0.84%  csbench  libc.so.6          [.] 0x00000000001a16f7
+            |
+            ---0x79e42e1a16f7
+
+
+
+#
+# (Cannot load tips.txt file, please install perf!)
+#

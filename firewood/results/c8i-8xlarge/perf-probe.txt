@@ -1,0 +1,11 @@
+
+ Performance counter stats for 'true':
+
+              0.32 msec cpu-clock                                                             
+
+       0.001611597 seconds time elapsed
+
+       0.000000000 seconds user
+       0.001170000 seconds sys
+
+

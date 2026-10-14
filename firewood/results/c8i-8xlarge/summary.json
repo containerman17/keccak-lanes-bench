@@ -1,0 +1,627 @@
+[
+  {
+    "n": 2000000,
+    "d": 9600,
+    "cache": 1024,
+    "level": "db",
+    "mode": "bundled",
+    "repeats": 2,
+    "files": [
+      "run-bundled-n2-d9600-r1.jsonl",
+      "run-bundled-n2-d9600-r2.jsonl"
+    ],
+    "read_ms": 50.55973175,
+    "write_ms": 4.6613264999999995,
+    "propose_ms": 122.39058625000001,
+    "commit_ms": 0.49755150000000004,
+    "total_ms": 177.87300225,
+    "us_per_dirty_slot": 18.528437734374997
+  },
+  {
+    "n": 2000000,
+    "d": 9600,
+    "cache": 1024,
+    "level": "db",
+    "mode": "lanes",
+    "repeats": 2,
+    "files": [
+      "run-lanes-n2-d9600-r1.jsonl",
+      "run-lanes-n2-d9600-r2.jsonl"
+    ],
+    "read_ms": 52.23331675,
+    "write_ms": 4.46843975,
+    "propose_ms": 111.9595525,
+    "commit_ms": 0.45622025,
+    "total_ms": 173.1993475,
+    "us_per_dirty_slot": 18.04159869791667
+  },
+  {
+    "n": 2000000,
+    "d": 9600,
+    "cache": 1024,
+    "level": "db",
+    "mode": "lanes+par",
+    "repeats": 2,
+    "files": [
+      "run-lanes+par-n2-d9600-r1.jsonl",
+      "run-lanes+par-n2-d9600-r2.jsonl"
+    ],
+    "read_ms": 53.175148,
+    "write_ms": 4.55708925,
+    "propose_ms": 89.8141205,
+    "commit_ms": 0.5041114999999999,
+    "total_ms": 187.05612150000002,
+    "us_per_dirty_slot": 19.48501265625
+  },
+  {
+    "n": 2000000,
+    "d": 9600,
+    "cache": 1024,
+    "level": "db",
+    "mode": "par",
+    "repeats": 2,
+    "files": [
+      "run-par-n2-d9600-r1.jsonl",
+      "run-par-n2-d9600-r2.jsonl"
+    ],
+    "read_ms": 51.99421925,
+    "write_ms": 4.66040325,
+    "propose_ms": 93.949245,
+    "commit_ms": 0.52955175,
+    "total_ms": 193.77200325,
+    "us_per_dirty_slot": 20.184583671874996
+  },
+  {
+    "n": 2000000,
+    "d": 9600,
+    "cache": 1024,
+    "level": "db",
+    "mode": "stock",
+    "repeats": 2,
+    "files": [
+      "run-stock-n2-d9600-r1.jsonl",
+      "run-stock-n2-d9600-r2.jsonl"
+    ],
+    "read_ms": 52.6342115,
+    "write_ms": 4.9808847499999995,
+    "propose_ms": 120.4256285,
+    "commit_ms": 0.46999375,
+    "total_ms": 178.35774475,
+    "us_per_dirty_slot": 18.578931744791667
+  },
+  {
+    "n": 2000000,
+    "d": 9600,
+    "cache": 1024,
+    "level": "e2e",
+    "mode": "bundled",
+    "repeats": 2,
+    "files": [
+      "run-bundled-n2-d9600-r1.jsonl",
+      "run-bundled-n2-d9600-r2.jsonl"
+    ],
+    "read_ms": 52.29847425,
+    "write_ms": 3.89892575,
+    "propose_ms": 142.39053725000002,
+    "commit_ms": 0.5540265,
+    "total_ms": 204.891834,
+    "us_per_dirty_slot": 21.342899375000002
+  },
+  {
+    "n": 2000000,
+    "d": 9600,
+    "cache": 1024,
+    "level": "e2e",
+    "mode": "lanes",
+    "repeats": 2,
+    "files": [
+      "run-lanes-n2-d9600-r1.jsonl",
+      "run-lanes-n2-d9600-r2.jsonl"
+    ],
+    "read_ms": 53.77857425,
+    "write_ms": 3.73081025,
+    "propose_ms": 132.29350425,
+    "commit_ms": 0.47610624999999995,
+    "total_ms": 192.75339825,
+    "us_per_dirty_slot": 20.078478984375
+  },
+  {
+    "n": 2000000,
+    "d": 9600,
+    "cache": 1024,
+    "level": "e2e",
+    "mode": "lanes+par",
+    "repeats": 2,
+    "files": [
+      "run-lanes+par-n2-d9600-r1.jsonl",
+      "run-lanes+par-n2-d9600-r2.jsonl"
+    ],
+    "read_ms": 52.84490425,
+    "write_ms": 3.77882525,
+    "propose_ms": 103.2269675,
+    "commit_ms": 0.5353665,
+    "total_ms": 160.24600575,
+    "us_per_dirty_slot": 16.692292265625
+  },
+  {
+    "n": 2000000,
+    "d": 9600,
+    "cache": 1024,
+    "level": "e2e",
+    "mode": "par",
+    "repeats": 2,
+    "files": [
+      "run-par-n2-d9600-r1.jsonl",
+      "run-par-n2-d9600-r2.jsonl"
+    ],
+    "read_ms": 52.49368725,
+    "write_ms": 3.76406125,
+    "propose_ms": 105.569445,
+    "commit_ms": 0.50094025,
+    "total_ms": 161.5566495,
+    "us_per_dirty_slot": 16.828817656250003
+  },
+  {
+    "n": 2000000,
+    "d": 9600,
+    "cache": 1024,
+    "level": "e2e",
+    "mode": "stock",
+    "repeats": 2,
+    "files": [
+      "run-stock-n2-d9600-r1.jsonl",
+      "run-stock-n2-d9600-r2.jsonl"
+    ],
+    "read_ms": 53.710367500000004,
+    "write_ms": 3.748831,
+    "propose_ms": 141.4381105,
+    "commit_ms": 0.49703200000000003,
+    "total_ms": 200.03937275,
+    "us_per_dirty_slot": 20.837434661458335
+  },
+  {
+    "n": 2000000,
+    "d": 38400,
+    "cache": 256,
+    "level": "db",
+    "mode": "bundled",
+    "repeats": 1,
+    "files": [
+      "run-bundled-n2-d38400-c256-r1.jsonl"
+    ],
+    "read_ms": 208.99477100000001,
+    "write_ms": 20.46648,
+    "propose_ms": 409.78936350000004,
+    "commit_ms": 1.8476089999999998,
+    "total_ms": 652.453145,
+    "us_per_dirty_slot": 16.990967317708332
+  },
+  {
+    "n": 2000000,
+    "d": 38400,
+    "cache": 256,
+    "level": "db",
+    "mode": "lanes",
+    "repeats": 1,
+    "files": [
+      "run-lanes-n2-d38400-c256-r1.jsonl"
+    ],
+    "read_ms": 232.4528465,
+    "write_ms": 20.5702775,
+    "propose_ms": 379.875901,
+    "commit_ms": 1.5951735,
+    "total_ms": 637.417385,
+    "us_per_dirty_slot": 16.59941106770833
+  },
+  {
+    "n": 2000000,
+    "d": 38400,
+    "cache": 256,
+    "level": "db",
+    "mode": "lanes+par",
+    "repeats": 1,
+    "files": [
+      "run-lanes+par-n2-d38400-c256-r1.jsonl"
+    ],
+    "read_ms": 228.19402,
+    "write_ms": 20.871221499999997,
+    "propose_ms": 263.892917,
+    "commit_ms": 1.641061,
+    "total_ms": 514.8494364999999,
+    "us_per_dirty_slot": 13.407537408854168
+  },
+  {
+    "n": 2000000,
+    "d": 38400,
+    "cache": 256,
+    "level": "db",
+    "mode": "par",
+    "repeats": 1,
+    "files": [
+      "run-par-n2-d38400-c256-r1.jsonl"
+    ],
+    "read_ms": 230.3055695,
+    "write_ms": 20.5338245,
+    "propose_ms": 265.379968,
+    "commit_ms": 1.66608,
+    "total_ms": 522.961838,
+    "us_per_dirty_slot": 13.618797864583332
+  },
+  {
+    "n": 2000000,
+    "d": 38400,
+    "cache": 256,
+    "level": "db",
+    "mode": "stock",
+    "repeats": 1,
+    "files": [
+      "run-stock-n2-d38400-c256-r1.jsonl"
+    ],
+    "read_ms": 229.8698955,
+    "write_ms": 20.802502500000003,
+    "propose_ms": 403.775612,
+    "commit_ms": 1.6270419999999999,
+    "total_ms": 657.4848215,
+    "us_per_dirty_slot": 17.122000559895834
+  },
+  {
+    "n": 2000000,
+    "d": 38400,
+    "cache": 1024,
+    "level": "db",
+    "mode": "bundled",
+    "repeats": 2,
+    "files": [
+      "gate-bundled.jsonl",
+      "run-bundled-n2-d38400-r2.jsonl"
+    ],
+    "read_ms": 222.6665835,
+    "write_ms": 20.554755999999998,
+    "propose_ms": 433.26062675000003,
+    "commit_ms": 1.9931917499999998,
+    "total_ms": 687.8234395,
+    "us_per_dirty_slot": 17.912068736979165
+  },
+  {
+    "n": 2000000,
+    "d": 38400,
+    "cache": 1024,
+    "level": "db",
+    "mode": "lanes",
+    "repeats": 2,
+    "files": [
+      "gate-lanes.jsonl",
+      "run-lanes-n2-d38400-r2.jsonl"
+    ],
+    "read_ms": 244.5721105,
+    "write_ms": 21.01989975,
+    "propose_ms": 425.44915025,
+    "commit_ms": 1.80262775,
+    "total_ms": 686.2116145,
+    "us_per_dirty_slot": 17.87009412760417
+  },
+  {
+    "n": 2000000,
+    "d": 38400,
+    "cache": 1024,
+    "level": "db",
+    "mode": "lanes+par",
+    "repeats": 2,
+    "files": [
+      "gate-lanes+par.jsonl",
+      "run-lanes+par-n2-d38400-r2.jsonl"
+    ],
+    "read_ms": 237.0214515,
+    "write_ms": 20.625564,
+    "propose_ms": 306.5189825,
+    "commit_ms": 1.84279375,
+    "total_ms": 556.0306665,
+    "us_per_dirty_slot": 14.4799652734375
+  },
+  {
+    "n": 2000000,
+    "d": 38400,
+    "cache": 1024,
+    "level": "db",
+    "mode": "par",
+    "repeats": 2,
+    "files": [
+      "gate-par.jsonl",
+      "run-par-n2-d38400-r2.jsonl"
+    ],
+    "read_ms": 241.74075200000001,
+    "write_ms": 21.08511525,
+    "propose_ms": 309.08079875,
+    "commit_ms": 1.821476,
+    "total_ms": 571.0542235,
+    "us_per_dirty_slot": 14.871203736979169
+  },
+  {
+    "n": 2000000,
+    "d": 38400,
+    "cache": 1024,
+    "level": "db",
+    "mode": "stock",
+    "repeats": 2,
+    "files": [
+      "gate-stock.jsonl",
+      "run-stock-n2-d38400-r2.jsonl"
+    ],
+    "read_ms": 246.82079975,
+    "write_ms": 21.045405,
+    "propose_ms": 447.32187550000003,
+    "commit_ms": 1.7699172500000002,
+    "total_ms": 716.0662475,
+    "us_per_dirty_slot": 18.64755852864583
+  },
+  {
+    "n": 2000000,
+    "d": 38400,
+    "cache": 1024,
+    "level": "e2e",
+    "mode": "bundled",
+    "repeats": 2,
+    "files": [
+      "gate-bundled.jsonl",
+      "run-bundled-n2-d38400-r2.jsonl"
+    ],
+    "read_ms": 232.83137299999999,
+    "write_ms": 16.4002575,
+    "propose_ms": 536.6842479999999,
+    "commit_ms": 2.114342,
+    "total_ms": 791.65745375,
+    "us_per_dirty_slot": 20.616079524739582
+  },
+  {
+    "n": 2000000,
+    "d": 38400,
+    "cache": 1024,
+    "level": "e2e",
+    "mode": "lanes",
+    "repeats": 2,
+    "files": [
+      "gate-lanes.jsonl",
+      "run-lanes-n2-d38400-r2.jsonl"
+    ],
+    "read_ms": 231.23831224999998,
+    "write_ms": 16.7159525,
+    "propose_ms": 529.0661845,
+    "commit_ms": 1.832315,
+    "total_ms": 791.0908597499999,
+    "us_per_dirty_slot": 20.601324472656252
+  },
+  {
+    "n": 2000000,
+    "d": 38400,
+    "cache": 1024,
+    "level": "e2e",
+    "mode": "lanes+par",
+    "repeats": 2,
+    "files": [
+      "gate-lanes+par.jsonl",
+      "run-lanes+par-n2-d38400-r2.jsonl"
+    ],
+    "read_ms": 245.12563825,
+    "write_ms": 16.553740750000003,
+    "propose_ms": 409.34760474999996,
+    "commit_ms": 1.845803,
+    "total_ms": 671.756056,
+    "us_per_dirty_slot": 17.493647291666665
+  },
+  {
+    "n": 2000000,
+    "d": 38400,
+    "cache": 1024,
+    "level": "e2e",
+    "mode": "par",
+    "repeats": 2,
+    "files": [
+      "gate-par.jsonl",
+      "run-par-n2-d38400-r2.jsonl"
+    ],
+    "read_ms": 247.65474925,
+    "write_ms": 16.98669125,
+    "propose_ms": 416.96984375,
+    "commit_ms": 1.8087585000000002,
+    "total_ms": 681.22030175,
+    "us_per_dirty_slot": 17.74011202473958
+  },
+  {
+    "n": 2000000,
+    "d": 38400,
+    "cache": 1024,
+    "level": "e2e",
+    "mode": "stock",
+    "repeats": 2,
+    "files": [
+      "gate-stock.jsonl",
+      "run-stock-n2-d38400-r2.jsonl"
+    ],
+    "read_ms": 236.62220200000002,
+    "write_ms": 16.85111275,
+    "propose_ms": 552.9519359999999,
+    "commit_ms": 1.8364985,
+    "total_ms": 825.11312,
+    "us_per_dirty_slot": 21.487320833333335
+  },
+  {
+    "n": 6000000,
+    "d": 38400,
+    "cache": 1024,
+    "level": "db",
+    "mode": "bundled",
+    "repeats": 2,
+    "files": [
+      "run-bundled-n6-d38400-r1.jsonl",
+      "run-bundled-n6-d38400-r2.jsonl"
+    ],
+    "read_ms": 310.5230835,
+    "write_ms": 21.3984955,
+    "propose_ms": 545.051174,
+    "commit_ms": 2.4576305,
+    "total_ms": 880.7028415,
+    "us_per_dirty_slot": 22.934969830729166
+  },
+  {
+    "n": 6000000,
+    "d": 38400,
+    "cache": 1024,
+    "level": "db",
+    "mode": "lanes",
+    "repeats": 2,
+    "files": [
+      "run-lanes-n6-d38400-r1.jsonl",
+      "run-lanes-n6-d38400-r2.jsonl"
+    ],
+    "read_ms": 334.68368225,
+    "write_ms": 21.493434,
+    "propose_ms": 517.02956125,
+    "commit_ms": 2.1478764999999997,
+    "total_ms": 863.2627975,
+    "us_per_dirty_slot": 22.480802018229166
+  },
+  {
+    "n": 6000000,
+    "d": 38400,
+    "cache": 1024,
+    "level": "db",
+    "mode": "lanes+par",
+    "repeats": 2,
+    "files": [
+      "run-lanes+par-n6-d38400-r1.jsonl",
+      "run-lanes+par-n6-d38400-r2.jsonl"
+    ],
+    "read_ms": 322.201056,
+    "write_ms": 21.3473915,
+    "propose_ms": 378.7306555,
+    "commit_ms": 2.24608675,
+    "total_ms": 719.1203634999999,
+    "us_per_dirty_slot": 18.727092799479166
+  },
+  {
+    "n": 6000000,
+    "d": 38400,
+    "cache": 1024,
+    "level": "db",
+    "mode": "par",
+    "repeats": 2,
+    "files": [
+      "run-par-n6-d38400-r1.jsonl",
+      "run-par-n6-d38400-r2.jsonl"
+    ],
+    "read_ms": 315.72817024999995,
+    "write_ms": 20.657242,
+    "propose_ms": 381.36057925,
+    "commit_ms": 2.267609,
+    "total_ms": 714.13764025,
+    "us_per_dirty_slot": 18.597334381510414
+  },
+  {
+    "n": 6000000,
+    "d": 38400,
+    "cache": 1024,
+    "level": "db",
+    "mode": "stock",
+    "repeats": 2,
+    "files": [
+      "run-stock-n6-d38400-r1.jsonl",
+      "run-stock-n6-d38400-r2.jsonl"
+    ],
+    "read_ms": 327.1792445,
+    "write_ms": 21.6009885,
+    "propose_ms": 548.89795275,
+    "commit_ms": 2.127333,
+    "total_ms": 879.6065125,
+    "us_per_dirty_slot": 22.906419596354166
+  },
+  {
+    "n": 6000000,
+    "d": 38400,
+    "cache": 1024,
+    "level": "e2e",
+    "mode": "bundled",
+    "repeats": 2,
+    "files": [
+      "run-bundled-n6-d38400-r1.jsonl",
+      "run-bundled-n6-d38400-r2.jsonl"
+    ],
+    "read_ms": 334.04820175,
+    "write_ms": 16.029373,
+    "propose_ms": 635.28464575,
+    "commit_ms": 2.42774975,
+    "total_ms": 972.4717215000001,
+    "us_per_dirty_slot": 25.3247844140625
+  },
+  {
+    "n": 6000000,
+    "d": 38400,
+    "cache": 1024,
+    "level": "e2e",
+    "mode": "lanes",
+    "repeats": 2,
+    "files": [
+      "run-lanes-n6-d38400-r1.jsonl",
+      "run-lanes-n6-d38400-r2.jsonl"
+    ],
+    "read_ms": 330.68575375,
+    "write_ms": 16.11934875,
+    "propose_ms": 611.556841,
+    "commit_ms": 2.108505,
+    "total_ms": 956.9547540000001,
+    "us_per_dirty_slot": 24.92069671875
+  },
+  {
+    "n": 6000000,
+    "d": 38400,
+    "cache": 1024,
+    "level": "e2e",
+    "mode": "lanes+par",
+    "repeats": 2,
+    "files": [
+      "run-lanes+par-n6-d38400-r1.jsonl",
+      "run-lanes+par-n6-d38400-r2.jsonl"
+    ],
+    "read_ms": 342.59833249999997,
+    "write_ms": 15.731596249999999,
+    "propose_ms": 495.767624,
+    "commit_ms": 2.218073,
+    "total_ms": 842.155152,
+    "us_per_dirty_slot": 21.931123749999998
+  },
+  {
+    "n": 6000000,
+    "d": 38400,
+    "cache": 1024,
+    "level": "e2e",
+    "mode": "par",
+    "repeats": 2,
+    "files": [
+      "run-par-n6-d38400-r1.jsonl",
+      "run-par-n6-d38400-r2.jsonl"
+    ],
+    "read_ms": 339.038394,
+    "write_ms": 15.9672905,
+    "propose_ms": 501.1977985,
+    "commit_ms": 2.2492332499999996,
+    "total_ms": 842.67242575,
+    "us_per_dirty_slot": 21.94459442057292
+  },
+  {
+    "n": 6000000,
+    "d": 38400,
+    "cache": 1024,
+    "level": "e2e",
+    "mode": "stock",
+    "repeats": 2,
+    "files": [
+      "run-stock-n6-d38400-r1.jsonl",
+      "run-stock-n6-d38400-r2.jsonl"
+    ],
+    "read_ms": 330.96020175,
+    "write_ms": 16.083534999999998,
+    "propose_ms": 646.283458,
+    "commit_ms": 2.21137475,
+    "total_ms": 996.88676325,
+    "us_per_dirty_slot": 25.96059279296875
+  }
+]

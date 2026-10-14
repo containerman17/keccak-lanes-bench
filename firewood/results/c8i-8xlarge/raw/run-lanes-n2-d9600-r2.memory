@@ -1,0 +1,65 @@
+Wed Oct 14 13:17:14 JST 2026
+               total        used        free      shared  buff/cache   available
+Mem:     66320347136  1549041664 57417580544     3166208  8096681984 64771305472
+Swap:              0           0           0
+0	/home/ubuntu/dbs
+Wed Oct 14 13:17:19 JST 2026
+               total        used        free      shared  buff/cache   available
+Mem:     66320347136  3500314624 55466287104     3166208  8096698368 62820032512
+Swap:              0           0           0
+0	/home/ubuntu/dbs
+0 /home/ubuntu/dbs/csbench-db-903595140/firewood/firewood.db
+Wed Oct 14 13:17:24 JST 2026
+               total        used        free      shared  buff/cache   available
+Mem:     66320347136  5176496128 53790105600     3166208  8096698368 61143851008
+Swap:              0           0           0
+0	/home/ubuntu/dbs
+0 /home/ubuntu/dbs/csbench-db-903595140/firewood/firewood.db
+Wed Oct 14 13:17:29 JST 2026
+               total        used        free      shared  buff/cache   available
+Mem:     66320347136  7040180224 51703668736     3166208  8319451136 59280166912
+Swap:              0           0           0
+218104184	/home/ubuntu/dbs
+218104184 /home/ubuntu/dbs/csbench-db-903595140/firewood/firewood.db
+Wed Oct 14 13:17:34 JST 2026
+               total        used        free      shared  buff/cache   available
+Mem:     66320347136  6916984832 51643248640     3166208  8503099392 59403362304
+Swap:              0           0           0
+397161272	/home/ubuntu/dbs
+397161272 /home/ubuntu/dbs/csbench-db-903595140/firewood/firewood.db
+Wed Oct 14 13:17:39 JST 2026
+               total        used        free      shared  buff/cache   available
+Mem:     66320347136  2156048384 56810516480     3166208  8096722944 64164298752
+Swap:              0           0           0
+0	/home/ubuntu/dbs
+0 /home/ubuntu/dbs/csbench-e2e-168655499/firewood/firewood.db
+Wed Oct 14 13:17:44 JST 2026
+               total        used        free      shared  buff/cache   available
+Mem:     66320347136  3281690624 55684866048     3166208  8096731136 63038656512
+Swap:              0           0           0
+0	/home/ubuntu/dbs
+0 /home/ubuntu/dbs/csbench-e2e-168655499/firewood/firewood.db
+Wed Oct 14 13:17:49 JST 2026
+               total        used        free      shared  buff/cache   available
+Mem:     66320347136  4731551744 54235004928     3166208  8096731136 61588795392
+Swap:              0           0           0
+0	/home/ubuntu/dbs
+0 /home/ubuntu/dbs/csbench-e2e-168655499/firewood/firewood.db
+Wed Oct 14 13:17:54 JST 2026
+               total        used        free      shared  buff/cache   available
+Mem:     66320347136  5839224832 53127331840     3166208  8096731136 60481122304
+Swap:              0           0           0
+0	/home/ubuntu/dbs
+0 /home/ubuntu/dbs/csbench-e2e-168655499/firewood/firewood.db
+Wed Oct 14 13:17:59 JST 2026
+               total        used        free      shared  buff/cache   available
+Mem:     66320347136  7068508160 51670745088     3166208  8324624384 59251838976
+Swap:              0           0           0
+222760278	/home/ubuntu/dbs
+223010276 /home/ubuntu/dbs/csbench-e2e-168655499/firewood/firewood.db
+Wed Oct 14 13:18:04 JST 2026
+               total        used        free      shared  buff/cache   available
+Mem:     66320347136  7159848960 51486232576     3166208  8417210368 59160498176
+Swap:              0           0           0
+313275303	/home/ubuntu/dbs
+313275303 /home/ubuntu/dbs/csbench-e2e-168655499/firewood/firewood.db

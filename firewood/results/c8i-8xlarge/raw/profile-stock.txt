@@ -1,0 +1,47 @@
+== stock: top 30 self-time symbols (perf record -e cpu-clock -F 499 -g, measured blocks 6-25, same-name entries merged) ==
+ 10.35%  <alloc::boxed::Box<firewood_storage::node::branch::BranchNode> as core::clone::Clone>::clone
+  8.29%  keccak::backends::soft::keccak_p::<u64, 24>
+  4.15%  <firewood_storage::node::persist::MaybePersistedNode>::as_shared_node::<&firewood_storage::nodestore::NodeStore<firewood_storage::nodestore::Committed, firewood_storage::linear::filebacked::FileBacked
+  3.98%  core::ptr::drop_glue::<core::option::Option<firewood_storage::node::branch::Child>>
+  3.28%  <firewood_storage::node::branch::Child as core::clone::Clone>::clone
+  3.00%  <firewood_storage::node::path::Path as core::ops::deref::Deref>::deref
+  2.35%  golang.org/x/crypto/sha3.keccakF1600
+  2.22%  <lru_mem::LruCache<firewood_storage::nodestore::primitives::LinearAddress, firewood_storage::CachedNode>>::insert
+  2.16%  <firewood_storage::linear::filebacked::FileBacked as firewood_storage::linear::ReadableStorage>::read_cached_node
+  2.09%  <metrics_util::registry::Registry<metrics::key::Key, metrics_util::registry::recency::GenerationalStorage<metrics_exporter_prometheus::registry::AtomicStorage>>>::get_or_create_counter::<<metrics_expo
+  2.07%  core::ptr::drop_glue::<firewood_storage::node::Node>
+  2.06%  <firewood_storage::node::persist::MaybePersistedNode>::as_shared_node::<firewood_storage::nodestore::NodeStore<firewood_storage::nodestore::Mutable<firewood_storage::nodestore::Propose>, firewood_stor
+  1.74%  <[&core::option::Option<firewood_storage::node::branch::Child>; 16]>::try_map::<core::ops::try_trait::NeverShortCircuit<core::option::Option<firewood_storage::hashtype::ethhash::HashOrRlp>>, <core::op
+  1.67%  <firewood::merkle::Merkle<firewood_storage::nodestore::NodeStore<firewood_storage::nodestore::Mutable<firewood_storage::nodestore::Propose>, firewood_storage::linear::filebacked::FileBacked>>>::insert
+  1.63%  <firewood_storage::node::persist::MaybePersistedNode>::as_shared_node::<firewood_storage::nodestore::NodeStore<firewood_storage::nodestore::Committed, firewood_storage::linear::filebacked::FileBacked>
+  1.62%  <firewood_storage::nodestore::NodeStore<firewood_storage::nodestore::Mutable<firewood_storage::nodestore::Propose>, firewood_storage::linear::filebacked::FileBacked>>::hash_helper_inner
+  1.48%  <firewood_storage::hashedshunt::HashableShunt<&[firewood_storage::path::component::PathComponent], &[firewood_storage::path::component::PathComponent]> as firewood_storage::hashednode::Hashable>::chil
+  1.25%  <bumpalo::collections::vec::Vec<u8> as firewood_storage::node::ExtendableBytes>::extend_from_slice
+  1.18%  rep_movs_alternative
+  1.14%  <firewood_storage::node::branch::BranchNode as lru_mem::mem_size::HeapSize>::heap_size
+  1.09%  <firewood_storage::node::branch::Child>::unpersisted
+  1.08%  <firewood_storage::node::persist::MaybePersistedNode>::allocated_info
+  1.07%  <firewood_storage::node::Node>::as_bytes::<bumpalo::collections::vec::Vec<u8>>
+  0.99%  core::ptr::drop_glue::<metrics_util::registry::recency::Generational<alloc::sync::Arc<core::sync::atomic::Atomic<u64>>>>
+  0.98%  firewood::merkle::get_helper::<&firewood_storage::nodestore::NodeStore<firewood_storage::nodestore::Committed, firewood_storage::linear::filebacked::FileBacked>>
+  0.92%  <firewood_storage::node::branch::Child>::persist_info
+  0.89%  do_user_addr_fault
+  0.86%  <triomphe::arc::Arc<firewood_storage::node::Node>>::unwrap_or_clone
+  0.84%  _rjem_je_arena_ptr_array_flush
+  0.83%  filemap_get_read_batch
+
+self-time keccak symbols: Rust/Firewood 8.58%, Go (csbench key/slot hashing) 2.44%
+
+call-chain attribution (perf record -e cpu-clock -F 499 --call-graph dwarf,8192, 8806 samples, first matching rule wins):
+  8.11%  keccak (Firewood, Rust)
+  2.41%  keccak (Go side)
+ 12.21%  hash traversal (non-keccak)
+  8.07%  pread/pwrite + page cache
+ 22.19%  background persist worker (non-I/O)
+ 18.10%  read_for_update/insert (propose)
+  9.41%  node clone, caller truncated by 8 KiB dwarf stack
+ 13.84%  get/read path
+  1.71%  Go runtime
+  0.84%  other Go
+  0.56%  kernel other
+  2.54%  other/unattributed

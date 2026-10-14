@@ -1,0 +1,86 @@
+stock top 25 self symbols:
+  7.12% <alloc::boxed::Box<firewood_storage::node::branch::BranchNode> as core::clone::Clone>::clone
+  4.66% keccak::backends::soft::keccak_p::<u64, 24>
+  4.15% <firewood_storage::node::persist::MaybePersistedNode>::as_shared_node::<&firewood_storage::nodestore::NodeStore<firewood_storage::nodestore::Committed, firewood_storage::linear::filebacked::FileBacked>>
+  3.63% keccak::backends::soft::keccak_p::<u64, 24>
+  3.28% <firewood_storage::node::branch::Child as core::clone::Clone>::clone
+  3.23% <alloc::boxed::Box<firewood_storage::node::branch::BranchNode> as core::clone::Clone>::clone
+  3.00% <firewood_storage::node::path::Path as core::ops::deref::Deref>::deref
+  2.35% golang.org/x/crypto/sha3.keccakF1600
+  2.22% <lru_mem::LruCache<firewood_storage::nodestore::primitives::LinearAddress, firewood_storage::CachedNode>>::insert
+  2.16% <firewood_storage::linear::filebacked::FileBacked as firewood_storage::linear::ReadableStorage>::read_cached_node
+  2.15% core::ptr::drop_glue::<core::option::Option<firewood_storage::node::branch::Child>>
+  2.09% <metrics_util::registry::Registry<metrics::key::Key, metrics_util::registry::recency::GenerationalStorage<metrics_exporter_prometheus::registry::AtomicStorage>>>::get_or_create_counter::<<metrics_exporter_prometheus::recorder::PrometheusRecorder as metrics::recorder::Recorder>::register_counter::{closure#0}, metrics::handles::Counter>
+  2.06% <firewood_storage::node::persist::MaybePersistedNode>::as_shared_node::<firewood_storage::nodestore::NodeStore<firewood_storage::nodestore::Mutable<firewood_storage::nodestore::Propose>, firewood_storage::linear::filebacked::FileBacked>>
+  1.87% core::ptr::drop_glue::<firewood_storage::node::Node>
+  1.77% core::ptr::drop_glue::<core::option::Option<firewood_storage::node::branch::Child>>
+  1.74% <[&core::option::Option<firewood_storage::node::branch::Child>; 16]>::try_map::<core::ops::try_trait::NeverShortCircuit<core::option::Option<firewood_storage::hashtype::ethhash::HashOrRlp>>, <core::ops::try_trait::NeverShortCircuit<core::option::Option<firewood_storage::hashtype::ethhash::HashOrRlp>>>::wrap_mut_1<&core::option::Option<firewood_storage::node::branch::Child>, <firewood_storage::node::children::Children<&core::option::Option<firewood_storage::node::branch::Child>>>::map<core::option::Option<firewood_storage::hashtype::ethhash::HashOrRlp>, <firewood_storage::node::branch::BranchNode>::children_hashes::{closure#0}>::{closure#0}>::{closure#0}>
+  1.67% <firewood::merkle::Merkle<firewood_storage::nodestore::NodeStore<firewood_storage::nodestore::Mutable<firewood_storage::nodestore::Propose>, firewood_storage::linear::filebacked::FileBacked>>>::insert_helper
+  1.62% <firewood_storage::nodestore::NodeStore<firewood_storage::nodestore::Mutable<firewood_storage::nodestore::Propose>, firewood_storage::linear::filebacked::FileBacked>>::hash_helper_inner
+  1.52% <firewood_storage::node::persist::MaybePersistedNode>::as_shared_node::<firewood_storage::nodestore::NodeStore<firewood_storage::nodestore::Committed, firewood_storage::linear::filebacked::FileBacked>>
+  1.48% <firewood_storage::hashedshunt::HashableShunt<&[firewood_storage::path::component::PathComponent], &[firewood_storage::path::component::PathComponent]> as firewood_storage::hashednode::Hashable>::children
+  1.25% <bumpalo::collections::vec::Vec<u8> as firewood_storage::node::ExtendableBytes>::extend_from_slice
+  1.18% rep_movs_alternative
+  1.14% <firewood_storage::node::branch::BranchNode as lru_mem::mem_size::HeapSize>::heap_size
+  1.09% <firewood_storage::node::branch::Child>::unpersisted
+  1.08% <firewood_storage::node::persist::MaybePersistedNode>::allocated_info
+Keccak permutation self symbols:
+  4.66% keccak::backends::soft::keccak_p::<u64, 24>
+  3.63% keccak::backends::soft::keccak_p::<u64, 24>
+  2.35% golang.org/x/crypto/sha3.keccakF1600
+Sum of displayed permutation self shares: 10.64%
+Other hash-related symbols:
+  0.34% firewood_storage::hashers::ethhash::write_with_digest::<firewood_storage::hashedshunt::HashableShunt<&[firewood_storage::path::component::PathComponent], &[firewood_storage::path::component::PathComponent]>, smallvec::SmallVec<[u8; 32]>, <firewood_storage::hashedshunt::HashableShunt<&[firewood_storage::path::component::PathComponent], &[firewood_storage::path::component::PathComponent]> as firewood_storage::hashednode::Preimage>::write<smallvec::SmallVec<[u8; 32]>>::{closure#0}>
+  0.15% <sha3::Keccak256 as digest::Update>::update
+  0.14% <sha3::Keccak256 as digest::FixedOutput>::finalize_into
+  0.05% github.com/ava-labs/libevm/crypto.Keccak256
+
+lanes+par top 25 self symbols:
+  7.80% <alloc::boxed::Box<firewood_storage::node::branch::BranchNode> as core::clone::Clone>::clone
+  3.84% <firewood_storage::node::persist::MaybePersistedNode>::as_shared_node::<&firewood_storage::nodestore::NodeStore<firewood_storage::nodestore::Committed, firewood_storage::linear::filebacked::FileBacked>>
+  3.66% <firewood_storage::node::path::Path as core::ops::deref::Deref>::deref
+  3.57% <firewood_storage::node::branch::Child as core::clone::Clone>::clone
+  3.36% <alloc::boxed::Box<firewood_storage::node::branch::BranchNode> as core::clone::Clone>::clone
+  2.51% core::ptr::drop_glue::<core::option::Option<firewood_storage::node::branch::Child>>
+  2.39% <lru_mem::LruCache<firewood_storage::nodestore::primitives::LinearAddress, firewood_storage::CachedNode>>::insert
+  2.24% golang.org/x/crypto/sha3.keccakF1600
+  2.17% <firewood_storage::linear::filebacked::FileBacked as firewood_storage::linear::ReadableStorage>::read_cached_node
+  2.15% <firewood_storage::node::persist::MaybePersistedNode>::as_shared_node::<firewood_storage::nodestore::NodeStore<firewood_storage::nodestore::Mutable<firewood_storage::nodestore::Propose>, firewood_storage::linear::filebacked::FileBacked>>
+  2.14% <[&core::option::Option<firewood_storage::node::branch::Child>; 16]>::try_map::<core::ops::try_trait::NeverShortCircuit<core::option::Option<firewood_storage::hashtype::ethhash::HashOrRlp>>, <core::ops::try_trait::NeverShortCircuit<core::option::Option<firewood_storage::hashtype::ethhash::HashOrRlp>>>::wrap_mut_1<&core::option::Option<firewood_storage::node::branch::Child>, <firewood_storage::node::children::Children<&core::option::Option<firewood_storage::node::branch::Child>>>::map<core::option::Option<firewood_storage::hashtype::ethhash::HashOrRlp>, <firewood_storage::node::branch::BranchNode>::children_hashes::{closure#0}>::{closure#0}>::{closure#0}>
+  2.00% <metrics_util::registry::Registry<metrics::key::Key, metrics_util::registry::recency::GenerationalStorage<metrics_exporter_prometheus::registry::AtomicStorage>>>::get_or_create_counter::<<metrics_exporter_prometheus::recorder::PrometheusRecorder as metrics::recorder::Recorder>::register_counter::{closure#0}, metrics::handles::Counter>
+  1.90% core::ptr::drop_glue::<firewood_storage::node::Node>
+  1.86% firewood_storage::hashers::batched::hash_subtrie
+  1.85% core::ptr::drop_glue::<core::option::Option<firewood_storage::node::branch::Child>>
+  1.51% <firewood_storage::hashedshunt::HashableShunt<&[firewood_storage::path::component::PathComponent], &[firewood_storage::path::component::PathComponent]> as firewood_storage::hashednode::Hashable>::children
+  1.50% <firewood::merkle::Merkle<firewood_storage::nodestore::NodeStore<firewood_storage::nodestore::Mutable<firewood_storage::nodestore::Propose>, firewood_storage::linear::filebacked::FileBacked>>>::insert_helper
+  1.44% <bumpalo::collections::vec::Vec<u8> as firewood_storage::node::ExtendableBytes>::extend_from_slice
+  1.22% <firewood_storage::node::branch::Child>::unpersisted
+  1.16% <firewood_storage::node::branch::BranchNode as lru_mem::mem_size::HeapSize>::heap_size
+  1.15% rep_movs_alternative
+  1.14% _rjem_je_arena_ptr_array_flush
+  1.12% <firewood_storage::node::branch::Child>::persist_info
+  1.10% firewood_storage::hashers::lanes::x86::kernel8
+  1.08% keccak::backends::soft::keccak_p::<u64, 24>
+Keccak permutation self symbols:
+  2.24% golang.org/x/crypto/sha3.keccakF1600
+  1.10% firewood_storage::hashers::lanes::x86::kernel8
+  1.08% keccak::backends::soft::keccak_p::<u64, 24>
+  0.07% keccak::backends::soft::keccak_p::<u64, 24>
+Sum of displayed permutation self shares: 4.49%
+Other hash-related symbols:
+  1.86% firewood_storage::hashers::batched::hash_subtrie
+  0.38% firewood_storage::hashers::batched::hash_level
+  0.18% firewood_storage::hashers::ethhash::write_with_digest::<firewood_storage::hashedshunt::HashableShunt<&[firewood_storage::path::component::PathComponent], &[firewood_storage::path::component::PathComponent]>, alloc::vec::Vec<u8>, firewood_storage::hashers::batched::hash_level::{closure#1}>
+  0.14% firewood_storage::hashers::lanes::x86::sponge::hash::<8>
+  0.13% github.com/ava-labs/libevm/crypto.Keccak256
+  0.08% <alloc::vec::Vec<firewood_storage::hashtype::ethhash::HashOrRlp> as alloc::vec::spec_from_iter_nested::SpecFromIterNested<firewood_storage::hashtype::ethhash::HashOrRlp, core::iter::adapters::flatten::FlatMap<core::slice::iter::Chunks<firewood_storage::hashers::batched::Entry>, alloc::vec::Vec<firewood_storage::hashtype::ethhash::HashOrRlp>, firewood_storage::hashers::batched::hash_subtrie::{closure#0}>>>::from_iter
+  0.08% firewood_storage::hashers::batched::hash_depth_first
+  0.07% <alloc::vec::into_iter::IntoIter<alloc::vec::Vec<u8>> as core::iter::traits::iterator::Iterator>::fold::<(), core::iter::adapters::map::map_fold<alloc::vec::Vec<u8>, firewood_storage::hashtype::ethhash::HashOrRlp, (), firewood_storage::hashers::batched::hash_level::{closure#4}, core::iter::traits::iterator::Iterator::for_each::call<firewood_storage::hashtype::ethhash::HashOrRlp, <alloc::vec::Vec<firewood_storage::hashtype::ethhash::HashOrRlp>>::extend_trusted<core::iter::adapters::map::Map<alloc::vec::into_iter::IntoIter<alloc::vec::Vec<u8>>, firewood_storage::hashers::batched::hash_level::{closure#4}>>::{closure#0}>::{closure#0}>::{closure#0}>
+  0.05% <sha3::Keccak256 as digest::FixedOutput>::finalize_into
+  0.04% <alloc::vec::Vec<&[u8]> as alloc::vec::spec_from_iter_nested::SpecFromIterNested<&[u8], core::iter::adapters::map::Map<core::iter::adapters::filter::Filter<core::slice::iter::Iter<alloc::vec::Vec<u8>>, firewood_storage::hashers::batched::hash_level::{closure#3}>, <alloc::vec::Vec<u8>>::as_slice>>>::from_iter
+  0.04% core::slice::sort::unstable::quicksort::quicksort::<usize, <[usize]>::sort_unstable_by_key<usize, firewood_storage::hashers::lanes::x86::grouped<8>::{closure#0}>::{closure#0}>
+  0.04% firewood_storage::hashers::lanes::x86::hash_many
+  0.01% <core::iter::adapters::flatten::FlatMap<core::slice::iter::Chunks<firewood_storage::hashers::batched::Entry>, alloc::vec::Vec<firewood_storage::hashtype::ethhash::HashOrRlp>, firewood_storage::hashers::batched::hash_subtrie::{closure#0}> as core::iter::traits::iterator::Iterator>::next
+  0.01% core::slice::sort::shared::smallsort::insertion_sort_shift_left::<usize, <[usize]>::sort_unstable_by_key<usize, firewood_storage::hashers::lanes::x86::grouped<4>::{closure#0}>::{closure#0}>
+  0.01% firewood_storage::hashers::ethhash::write_with_digest::<firewood_storage::hashedshunt::HashableShunt<&[firewood_storage::path::component::PathComponent], &[firewood_storage::path::component::PathComponent]>, alloc::vec::Vec<u8>, firewood_storage::hashers::batched::hash_level::{closure#2}>
+

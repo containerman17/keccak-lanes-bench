@@ -1,0 +1,6 @@
+Wed Oct 14 12:41:54 JST 2026
+               total        used        free      shared  buff/cache   available
+Mem:     66320347136  1350955008 57816170496     3166208  7896178688 64969392128
+Swap:              0           0           0
+Filesystem       1B-blocks       Used   Available Use% Mounted on
+/dev/root      40483942400 9089507328 31377657856  23% /

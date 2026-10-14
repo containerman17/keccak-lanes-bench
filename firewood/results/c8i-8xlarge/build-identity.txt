@@ -1,0 +1,46 @@
+aa856bb55f9852b5912741f2c85bf30cc9880b920ffb4a363405f1bce5c4e0b2  /home/ubuntu/csbench/go.mod
+e2e8ffd528b0036987cef340aaa478afa97a866b35d9dc6ee574f06b3ef1b538  /home/ubuntu/csbench/go.sum
+4ee8bbcf7cdaf80f12c09c87f42d9027cb9975bf65c1d3e2026c1cfa92abc227  /home/ubuntu/csbench/bench/go/csbench/main.go
+2c636628cd577359c271e49885663cf0931a44dd373ebd2663a6a04f9fbb3d87  /home/ubuntu/firewood/Cargo.lock
+766a9606d125f36bfc73ccf3974b294e4250a65f8fc8f4c470a6c9a73099a29a  /home/ubuntu/firewood/storage/src/hashers/batched.rs
+d6af7578ab16f253220c81c950d0db03055ab2a2bf943a350763bdcca5086ab6  /home/ubuntu/firewood/storage/src/hashers/lanes.rs
+c3f04a849cc9c45232206a61298c53f5f007e104557112748f6fe3e6a8d37806  /home/ubuntu/firewood/storage/src/hashers/lane_sponge.rs
+647a2094c731df976309c71bee23feac33a2bdd276f5e3b6e8473419c41c799f  /home/ubuntu/firewood/storage/src/hashers/ethhash.rs
+ce35aeeded7aba68753f000498ca5a9e710c027559ce7fb5abccb1ba17ddb4d3  /home/ubuntu/firewood/storage/src/hashers/mod.rs
+c33ce1aa97a063f83708eb4b1a8a7de705ec90d033e1795f74cf3afa3ed89513  /home/ubuntu/firewood/storage/src/nodestore/hash.rs
+e3fd07775328cf52cafea4a1504f3df90e2ae1ae583683e334a63861791cf7b5  /home/ubuntu/firewood/target/x86_64-unknown-linux-gnu/release/libfirewood_ffi.a
+go version go1.26.8 linux/amd64
+rustc 1.99.0 (b940084d7 2026-09-28)
+CPU CORE SOCKET
+  0    0      0
+  1    1      0
+  2    2      0
+  3    3      0
+  4    4      0
+  5    5      0
+  6    6      0
+  7    7      0
+  8    8      0
+  9    9      0
+ 10   10      0
+ 11   11      0
+ 12   12      0
+ 13   13      0
+ 14   14      0
+ 15   15      0
+ 16    0      0
+ 17    1      0
+ 18    2      0
+ 19    3      0
+ 20    4      0
+ 21    5      0
+ 22    6      0
+ 23    7      0
+ 24    8      0
+ 25    9      0
+ 26   10      0
+ 27   11      0
+ 28   12      0
+ 29   13      0
+ 30   14      0
+ 31   15      0

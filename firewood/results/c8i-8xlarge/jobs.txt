@@ -1,0 +1,39 @@
+gate-bundled bundled db 2000000 38400 1024 20 5 -self-check
+gate-stock stock db 2000000 38400 1024 20 5 -self-check
+gate-lanes lanes db 2000000 38400 1024 20 5 -self-check
+gate-par par db 2000000 38400 1024 20 5 -self-check
+gate-lanes+par lanes+par db 2000000 38400 1024 20 5 -self-check
+run-lanes+par-n2-d38400-r2 lanes+par db 2000000 38400 1024 20 5 -self-check
+run-par-n2-d38400-r2 par db 2000000 38400 1024 20 5 -self-check
+run-lanes-n2-d38400-r2 lanes db 2000000 38400 1024 20 5 -self-check
+run-stock-n2-d38400-r2 stock db 2000000 38400 1024 20 5 -self-check
+run-bundled-n2-d38400-r2 bundled db 2000000 38400 1024 20 5 -self-check
+run-bundled-n6-d38400-r1 bundled db 6000000 38400 1024 20 5 -self-check
+run-stock-n6-d38400-r1 stock db 6000000 38400 1024 20 5 -self-check
+run-lanes-n6-d38400-r1 lanes db 6000000 38400 1024 20 5 -self-check
+run-par-n6-d38400-r1 par db 6000000 38400 1024 20 5 -self-check
+run-lanes+par-n6-d38400-r1 lanes+par db 6000000 38400 1024 20 5 -self-check
+run-lanes+par-n6-d38400-r2 lanes+par db 6000000 38400 1024 20 5 -self-check
+run-par-n6-d38400-r2 par db 6000000 38400 1024 20 5 -self-check
+run-lanes-n6-d38400-r2 lanes db 6000000 38400 1024 20 5 -self-check
+run-stock-n6-d38400-r2 stock db 6000000 38400 1024 20 5 -self-check
+run-bundled-n6-d38400-r2 bundled db 6000000 38400 1024 20 5 -self-check
+run-bundled-n2-d9600-r1 bundled db 2000000 9600 1024 20 5 -self-check
+run-stock-n2-d9600-r1 stock db 2000000 9600 1024 20 5 -self-check
+run-lanes-n2-d9600-r1 lanes db 2000000 9600 1024 20 5 -self-check
+run-par-n2-d9600-r1 par db 2000000 9600 1024 20 5 -self-check
+run-lanes+par-n2-d9600-r1 lanes+par db 2000000 9600 1024 20 5 -self-check
+run-lanes+par-n2-d9600-r2 lanes+par db 2000000 9600 1024 20 5 -self-check
+run-par-n2-d9600-r2 par db 2000000 9600 1024 20 5 -self-check
+run-lanes-n2-d9600-r2 lanes db 2000000 9600 1024 20 5 -self-check
+run-stock-n2-d9600-r2 stock db 2000000 9600 1024 20 5 -self-check
+run-bundled-n2-d9600-r2 bundled db 2000000 9600 1024 20 5 -self-check
+run-bundled-n2-d38400-c256-r1 bundled db 2000000 38400 256 20 5
+run-stock-n2-d38400-c256-r1 stock db 2000000 38400 256 20 5
+run-lanes-n2-d38400-c256-r1 lanes db 2000000 38400 256 20 5
+run-par-n2-d38400-c256-r1 par db 2000000 38400 256 20 5
+run-lanes+par-n2-d38400-c256-r1 lanes+par db 2000000 38400 256 20 5
+profile.sh stock (FREQ=499, CG=-g)
+profile.sh lanes+par (FREQ=499, CG=-g)
+SUFFIX=-dwarf CG="--call-graph dwarf,8192" profile.sh stock
+SUFFIX=-dwarf CG="--call-graph dwarf,8192" profile.sh lanes+par
